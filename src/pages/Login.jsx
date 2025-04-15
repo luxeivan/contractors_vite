@@ -8,8 +8,10 @@ export default function Login() {
     return (
         <Container>
 
-            <Flex vertical justify='center' align='center' style={{ height: "100vh" }}>
-                <Title>Авторизация</Title>
+            <Flex vertical justify='center' align='center' style={{height:"50vh"}}>
+                <Title style={{color:"#555",fontWeight:100,fontStyle:"italic",fontSize:48}}>Сервис по добавлению фотоотчетов</Title> 
+                {/* <Title>Сервис по добавлению фотоотчетов</Title> */}
+                <Title level={2}>Авторизация</Title>
                 <FormAuth />
             </Flex>
         </Container>

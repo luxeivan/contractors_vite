@@ -1,4 +1,4 @@
-import { Flex } from 'antd'
+import { Flex, Image } from 'antd'
 import React, { useEffect, useState } from 'react'
 import ButtonLogout from './ButtonLogout'
 import Title from 'antd/es/typography/Title'
@@ -7,6 +7,7 @@ import ButtonBack from './ButtonBack'
 import Container from '../Container'
 import useAuth from '../../store/authStore'
 import { useLocation } from 'react-router-dom'
+import logo from '../../img/logo_mosoblenergo.svg'
 
 export default function Header() {
   const location = useLocation()
@@ -23,9 +24,10 @@ export default function Header() {
   return (
     <Container>
       <Flex vertical>
-        <Flex justify='space-between' align='center'>
-          <Title>Панель управления</Title>
-          {user &&
+        <Flex justify='space-between' align='center' style={{padding:20}}>
+          <Image src={logo}/>
+          
+          {user ?
             <Flex align='center' gap={20}>
               <p >
                 <Text style={{ fontSize: 20 }} type="secondary">Добро пожаловать </Text>
@@ -33,6 +35,8 @@ export default function Header() {
               </p>
               <ButtonLogout />
             </Flex>
+            :
+            <div></div>
           }
         </Flex>
         <Flex style={{ marginBottom: 20 }}>

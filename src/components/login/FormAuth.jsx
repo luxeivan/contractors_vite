@@ -52,8 +52,8 @@ export default function FormAuth() {
             <Form
                 name="auth"
                 labelCol={{ span: 10 }}
-                wrapperCol={{ span: 16 }}
-                style={{ maxWidth: 800 }}
+                wrapperCol={{ span: 24 }}
+                style={{ maxWidth: 1000, }}
                 initialValues={{ remember: true }}
                 onFinish={onFinish}
                 onFinishFailed={onFinishFailed}
