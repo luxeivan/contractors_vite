@@ -10,7 +10,7 @@ export default function ButtonBack() {
     // console.log(location);
     
 
-    if (location.pathname === '/dashboard' || location.pathname === '/admin'|| location.pathname === '/login') return false
+    if (location.pathname === '/dashboard' || location.pathname === '/admin'|| location.pathname === '/login'|| location.pathname === '/') return false
     return (
         <Button onClick={() => { navigate(-1) }}>Назад</Button>
     )
