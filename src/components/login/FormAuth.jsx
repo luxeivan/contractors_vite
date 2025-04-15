@@ -19,7 +19,7 @@ export default function FormAuth() {
             if (res) {
                 const user = await getUser()
                 // console.log("user", user);
-                changeUserAndRole(user.username, user.role.type)
+                // changeUserAndRole(user.username, user.role.type)
                 setErrorAuth(false)
                 if (user.role.type === 'admin' || user.role.type === 'readadmin') {
                     return navigate('/admin')

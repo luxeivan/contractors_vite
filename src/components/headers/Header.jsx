@@ -6,15 +6,20 @@ import Text from 'antd/es/typography/Text'
 import ButtonBack from './ButtonBack'
 import Container from '../Container'
 import useAuth from '../../store/authStore'
+import { useLocation } from 'react-router-dom'
 
 export default function Header() {
+  const location = useLocation()
+  // if(location.pathname='/'){
+  //   return <></>
+  // }
   const { user, getUser } = useAuth(store => store)
   useEffect(()=>{
     getUser()
   },[])
   // const user = await getUser()
   console.log("userHeader", user);
-
+  console.log("location", location);
   return (
     <Container>
       <Flex vertical>
@@ -24,7 +29,7 @@ export default function Header() {
             <Flex align='center' gap={20}>
               <p >
                 <Text style={{ fontSize: 20 }} type="secondary">Добро пожаловать </Text>
-                <Text style={{ fontSize: 20 }}>{user}</Text>
+                <Text style={{ fontSize: 20 }}>{user.username}</Text>
               </p>
               <ButtonLogout />
             </Flex>

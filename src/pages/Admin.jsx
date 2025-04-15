@@ -7,7 +7,7 @@ import TableContract from '../components/admin/TableContract'
 import TableContractor from '../components/admin/TableContractor'
 import Container from '../components/Container'
 // const server = process.env.SERVER_API
-export default async function Admin() {
+export default  function Admin() {
     const items = [
         {
           key: '1',

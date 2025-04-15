@@ -7,7 +7,7 @@ import {
   Routes,
   Route,
   Link,
-  Outlet
+  Outlet,
 } from 'react-router-dom';
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
@@ -22,22 +22,19 @@ function App() {
   return (
     <>
       <Router>
-        <div className="app">
-          <Header />
-
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/admin" element={<Admin />} />
-            {/* <Route path="/products" element={<Products />}>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<Admin />} />
+          {/* <Route path="/products" element={<Products />}>
             <Route index element={<ProductList />} />
             <Route path=":id" element={<ProductDetail />} />
             </Route> */}
-            <Route path="/dashboard/contracts/:id" element={<ContractItem />} />
-            <Route path="/dashboard" element={<Dashboard />}/>  
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
+          <Route path="/dashboard/contracts/:id" element={<ContractItem />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </Router>
 
 

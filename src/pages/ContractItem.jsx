@@ -22,7 +22,7 @@ export default function Contract({ params }) {
   }, [])
 
   // let contract = await getContractItem(idContract)
-  console.log("contract:", contract);
+  // console.log("contract:", contract);
   const countSteps = contract?.steps?.length
   const items = contract?.steps?.map((item, index) => (
     {

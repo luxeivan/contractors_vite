@@ -13,18 +13,22 @@ const useAuth = create((set, get) => ({
     set({ user: null, role: null })
   },
   getUser: async () => {
-    try {
-      const res = await axios.get(server + `/api/users/me?populate[0]=role`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('jwt')}`
+    if(localStorage.getItem('jwt')){
+      try {
+        const res = await axios.get(server + `/api/users/me?populate[0]=role`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`
+          }
+        })
+        if (res.data) {
+          set({ user: res.data, role: res.data })
+          return res.data
         }
-      })
-      if (res.data) {
-        set({ user: res.data.username, role: res.data.role.type })
-        return res.data
+      } catch (error) {
+        console.log("error getUser:", error);
+        return false
       }
-    } catch (error) {
-      console.log("error getUser:", error);
+    }else{
       return false
     }
   },
