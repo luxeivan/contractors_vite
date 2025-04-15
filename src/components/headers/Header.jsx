@@ -19,8 +19,8 @@ export default function Header() {
     getUser()
   },[])
   // const user = await getUser()
-  console.log("userHeader", user);
-  console.log("location", location);
+  // console.log("userHeader", user);
+  // console.log("location", location);
   return (
     <Container>
       <Flex vertical>
