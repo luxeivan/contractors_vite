@@ -45,7 +45,7 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
             },
             {
                 key: '1',
-                label: 'Описание',
+                label: 'Предмет договора',
                 children: contract.description,
             },
             {

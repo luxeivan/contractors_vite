@@ -35,7 +35,7 @@ export default function Admin() {
                   }>
                   <Flex vertical align='center'>
 
-                    <Text>{item.description}</Text>
+                    <Text style={{maxWidth:400}}>{item.description}</Text>
                     <Image src='https://infostart.ru/upload/iblock/d48/d489a1a6bb10747aa17e33be612ef5ff.png' preview={false} width={100} />
                   </Flex>
                 </Card>

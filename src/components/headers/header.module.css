@@ -1,0 +1,8 @@
+.topheader{
+    flex-wrap: nowrap;
+}
+@media (max-width:1200px) {
+    .topheader{
+        flex-wrap: wrap;
+    }  
+}

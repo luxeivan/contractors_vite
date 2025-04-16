@@ -41,7 +41,10 @@ export default function Contract({ params }) {
     <Container>
       {contract &&
         <>
-          <Title>Договор №{contract.number}</Title>
+        <Flex vertical>
+          <Flex gap={10} align='baseline'><Title style={{marginBottom:0}}>Договор №{contract.number}</Title><Text style={{ color: "#888", fontStyle: "italic",fontSize:18 }}> от {dayjs(contract.dateContract).format('DD.MM.YYYY')}</Text></Flex>
+          <Text style={{ color: "#888", fontStyle: "italic",fontSize:18,width:"50%",minWidth:300 }}>{contract.description}</Text>
+        </Flex>
           <Flex gap={20} vertical>
             <Flex justify={contract.document?.url ? 'space-between' : 'end'} align='center'>
               {contract.document?.url && <Link target='_blank' to={`${server}${contract.document.url}`}><span style={{ color: "blue" }}>Посмотреть договор</span></Link>}

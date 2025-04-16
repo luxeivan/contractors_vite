@@ -6,6 +6,7 @@ import ButtonBack from './ButtonBack'
 import Container from '../Container'
 import useAuth from '../../store/authStore'
 import logo from '../../img/logo_mosoblenergo.svg'
+import styles from './header.module.css'
 
 export default function Header() {
   const { user, getUser } = useAuth(store => store)
@@ -15,7 +16,7 @@ export default function Header() {
   return (
     <Container>
       <Flex vertical>
-        <Flex justify='space-between' align='center' style={{padding:20}}>
+        <Flex justify='space-between' align='center' style={{padding:20}} className={styles.topheader}>
           <Image src={logo} preview={false}/>
           
           {user ?
