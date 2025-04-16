@@ -10,22 +10,15 @@ import { useLocation } from 'react-router-dom'
 import logo from '../../img/logo_mosoblenergo.svg'
 
 export default function Header() {
-  const location = useLocation()
-  // if(location.pathname='/'){
-  //   return <></>
-  // }
   const { user, getUser } = useAuth(store => store)
   useEffect(()=>{
     getUser()
   },[])
-  // const user = await getUser()
-  // console.log("userHeader", user);
-  // console.log("location", location);
   return (
     <Container>
       <Flex vertical>
         <Flex justify='space-between' align='center' style={{padding:20}}>
-          <Image src={logo}/>
+          <Image src={logo} preview={false}/>
           
           {user ?
             <Flex align='center' gap={20}>
