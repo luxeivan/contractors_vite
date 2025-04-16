@@ -1,7 +1,7 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { server } from "../config";
-async function getJwt() {   
+async function getJwt() {
     return localStorage.getItem('jwt')
 }
 
@@ -116,7 +116,7 @@ export async function getContractorItemForAdmin(idContractor) {
 
 
 // Добавление нового подрядчика--------------------------------------------------------------------------
-export async function addNewContractor(data) {     
+export async function addNewContractor(data) {
     try {
         // ---------------------------------------------------
         const roleList = await axios.get(server + `/api/users-permissions/roles`, {
@@ -125,15 +125,15 @@ export async function addNewContractor(data) {
             }
         })
         console.log(roleList);
-        
+
         // ---------------------------------------------------
         const resUser = await axios.post(server + `/api/users`, {
 
             username: `${data.inn}-${data.kpp}`,
             email: `${data.inn}@${data.kpp}.ru`,
             password: data.password,
-            role: roleList.data.roles.find(item=>item.type === 'user').id,
-            confirmed:true
+            role: roleList.data.roles.find(item => item.type === 'user').id,
+            confirmed: true
 
         }, {
             headers: {
@@ -182,7 +182,7 @@ export async function addNewContract(formData, data) {
             const resContract = await axios.post(server + `/api/contracts`, {
                 data: {
                     number: data.number,
-                    dateContract: dayjs(data.dateContract).add(1,'day'),
+                    dateContract: dayjs(data.dateContract).add(1, 'day'),
                     description: data.description,
                     social: data.social,
                     document: file.data[0].id,
@@ -200,5 +200,31 @@ export async function addNewContract(formData, data) {
         }
     } catch (error) {
         console.log("error addNewContract :", error);
+    }
+}
+
+export async function updatePassword(userId, newPassword) {
+    try {
+        // console.log("userId", userId);
+        // console.log("newPassword", newPassword);
+        
+        const resContract = await axios.put(server + `/api/users/${userId}`, {
+            
+                password: newPassword
+            
+        }, {
+            headers: {
+                Authorization: `Bearer ${await getJwt()}`
+            }
+        })
+        // ---------------------------------------------------------
+        if (resContract.data) {
+            console.log("resContract.data", resContract.data);
+            
+            return resContract.data.data
+        }
+
+    } catch (error) {
+        console.log("error changePassword :", error);
     }
 }

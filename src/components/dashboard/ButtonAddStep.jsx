@@ -1,13 +1,14 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Modal, Upload, message } from 'antd'
+import { Button, Form, Input, Modal, Upload, Typography,Flex } from 'antd'
 import axios from 'axios';
 import React, { useState } from 'react'
 import { server } from '../../config';
+const { Text } = Typography
 
-function getCookie(name) {
-    var matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
-    return matches ? decodeURIComponent(matches[1]) : undefined;
-}
+// function getCookie(name) {
+//     var matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
+//     return matches ? decodeURIComponent(matches[1]) : undefined;
+// }
 
 export default function ButtonAddStep({ idContract, countSteps, updateContract }) {
     const [form] = Form.useForm();
@@ -127,7 +128,9 @@ export default function ButtonAddStep({ idContract, countSteps, updateContract }
                     >
                         <Input.TextArea />
                     </Form.Item>
-
+                    <Flex justify='end'>
+                        <Text style={{ color: "#999", fontSize: 10 }}>Размер файлов суммарно не должен превышать 20МБ</Text>
+                    </Flex>
                     <Upload
                         {...props}
                         multiple

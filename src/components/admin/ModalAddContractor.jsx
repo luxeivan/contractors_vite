@@ -12,7 +12,7 @@ export default function ModalAddContractor({ isOpenModalAddContract, closeModalA
   const onFinish = async values => {
     setUploading(true)
     const newContractor = await addNewContractor(values)
-    console.log('newContractor:', newContractor);
+    // console.log('newContractor:', newContractor);
     setUploading(false)
     closeModalAddContract()
     formAddContractor.resetFields()

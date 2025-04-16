@@ -103,7 +103,7 @@ export default function ModalAddContract({ isOpenModalAddContract, closeModalAdd
         </Form.Item>
         <Form.Item
           name='description'
-          label="Описание"
+          label="Предмет договора"
         >
           <Input.TextArea />
         </Form.Item>

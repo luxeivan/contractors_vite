@@ -1,13 +1,45 @@
-import { getContractorItemForAdmin } from '../../lib/getData'
-import { Descriptions, Flex, Modal, Spin } from 'antd'
+import { getContractorItemForAdmin, updatePassword } from '../../lib/getData'
+import { Descriptions, Flex, Modal, Spin, Button, Form, Input, Typography, notification } from 'antd'
 import React, { useEffect, useState } from 'react'
-
-import { server } from "../../config";
+import { passwordStrength } from 'check-password-strength'
+// import { server } from "../../config";
+const { Text } = Typography
+const Context = React.createContext({ name: 'Default' });
 
 export default function ModalViewContractor({ isOpenModal, closeModal, docIdForModal }) {
+    const [formChangePassword] = Form.useForm()
     const [contractor, setContractor] = useState(null)
     const [loading, setLoading] = useState(true)
-    // console.log(docIdForModal);
+    const [openChangePassword, setOpenChangePassword] = useState(false)
+    const [changingPassword, setChangingPassword] = useState(false)
+
+
+    const [api, contextHolder] = notification.useNotification();
+    const openNotification = () => {
+        api.success({
+            message: `Пароль изменен`,
+            // description: 'This is the content of the notification. This is the content of the notification. This is the content of the notification.',
+            placement: 'top',
+        });
+    };
+
+    // console.log("contractor", contractor);
+    const onFinish = async values => {
+        try {
+
+            setChangingPassword(true)
+            // const newContractor = await addNewContractor(values)
+            const newPass = await updatePassword(contractor.user.id, values.password)
+            // console.log('newContractor:', newContractor);
+            setChangingPassword(false)
+            setOpenChangePassword(false)
+            formChangePassword.resetFields()
+            openNotification()
+        } catch (error) {
+            console.log('Ошибка замены пароля', error);
+        }
+        // router.refresh()
+    };
 
     const fetching = async (idContract) => {
         try {
@@ -39,7 +71,7 @@ export default function ModalViewContractor({ isOpenModal, closeModal, docIdForM
                 label: 'ИНН-КПП',
                 children: `${contractor.inn}-${contractor.kpp}`,
             },
-           
+
             // {
             //     key: '3',
             //     label: 'КПП',
@@ -54,14 +86,82 @@ export default function ModalViewContractor({ isOpenModal, closeModal, docIdForM
             title={!loading && contractor ? `Подрядчик ${contractor.name}` : 'Загрузка подрядчика...'}
             footer={false}
         >
-            {loading && <Flex justify='center'><Spin /></Flex>}
-            {!loading && contractor &&
-                <Flex vertical gap={20}>
-                    <Descriptions items={propertiesContractor} column={1} />
-                    {/* {contractor.steps.length === 0 ? <Title level={4} style={{color:"#f00"}}>Этапов не добавлено</Title> : <ViewSteps steps={contractor.steps} />
+            <Context.Provider >
+
+                {contextHolder}
+                {loading && <Flex justify='center'><Spin /></Flex>}
+                {!loading && contractor &&
+                    <Flex vertical gap={20}>
+                        <Descriptions items={propertiesContractor} column={1} />
+                        {/* {contractor.steps.length === 0 ? <Title level={4} style={{color:"#f00"}}>Этапов не добавлено</Title> : <ViewSteps steps={contractor.steps} />
                     } */}
-                </Flex>
-            }
+                        <Button danger onClick={() => { setOpenChangePassword(!openChangePassword) }}>Сменить пароль пользователя</Button>
+
+                        {openChangePassword &&
+                            <Form
+                                name="formAddContractor"
+                                labelCol={{ span: 8 }}
+                                wrapperCol={{ span: 16 }}
+                                style={{ maxWidth: 600 }}
+                                initialValues={{ remember: true }}
+                                onFinish={onFinish}
+                                form={formChangePassword}
+                                // onFinishFailed={onFinishFailed}
+                                autoComplete="off"
+                            >
+                                <Flex justify='end'>
+                                    <Text style={{ color: "#999", fontSize: 10 }}>Пароль должен быть не менее 10 символов иметь заглавную букву и спецсимвол</Text>
+                                </Flex>
+                                <Form.Item
+                                    label="Пароль"
+                                    name="password"
+                                    rules={[
+                                        { required: true, message: 'Пожалуйста введите пароль.' },
+                                        ({ getFieldValue }) => ({
+                                            validator(_, value) {
+
+                                                if (passwordStrength(value).value === 'Medium' || passwordStrength(value).value === 'Strong') {
+                                                    return Promise.resolve();
+                                                }
+                                                return Promise.reject(new Error('Пароль слишком слабый'));
+                                            },
+                                        }),
+                                    ]}
+                                >
+                                    <Input.Password />
+                                </Form.Item>
+                                <Form.Item
+                                    label="Пароль еще раз"
+                                    name="password2"
+                                    dependencies={['password']}
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Пожалуйста повторите пароль.'
+                                        },
+                                        ({ getFieldValue }) => ({
+                                            validator(_, value) {
+                                                if (!value || getFieldValue('password') === value) {
+                                                    return Promise.resolve();
+                                                }
+                                                return Promise.reject(new Error('Пароли не совпадают'));
+                                            },
+                                        }),
+                                    ]}
+                                >
+                                    <Input.Password />
+                                </Form.Item>
+                                <Form.Item label={null}>
+                                    <Button type="primary" htmlType="submit">
+                                        {changingPassword ? 'Изменяется...' : 'Изменить'}
+                                    </Button>
+                                </Form.Item>
+                            </Form>
+
+                        }
+                    </Flex>
+                }
+            </Context.Provider>
         </Modal>
     )
 }

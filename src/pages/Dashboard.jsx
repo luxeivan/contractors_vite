@@ -33,7 +33,11 @@ export default function Admin() {
                       <Text style={{ color: "#888", fontStyle: "italic" }}> от {dayjs(item.dateContract).format('DD.MM.YYYY')}</Text>
                     </div>
                   }>
-                  <Image src='https://infostart.ru/upload/iblock/d48/d489a1a6bb10747aa17e33be612ef5ff.png' preview={false} width={200} />
+                  <Flex vertical align='center'>
+
+                    <Text>{item.description}</Text>
+                    <Image src='https://infostart.ru/upload/iblock/d48/d489a1a6bb10747aa17e33be612ef5ff.png' preview={false} width={100} />
+                  </Flex>
                 </Card>
               </Link>
             )}

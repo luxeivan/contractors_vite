@@ -19,6 +19,7 @@ import ContractItem from './pages/ContractItem';
 
 
 function App() {
+  
   return (
     <>
       <Router>

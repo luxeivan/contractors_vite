@@ -55,7 +55,7 @@ export default function TableContract() {
       render: text => <span>{text}</span>,
     },
     {
-      title: 'Описание',
+      title: 'Предмет договора',
       dataIndex: 'description',
       key: 'description',
     },
@@ -131,7 +131,7 @@ export default function TableContract() {
     <div>
       <Flex justify='space-between' align='center' style={{ marginBottom: 20 }}>
         <a onClick={handlerReload}><ReloadOutlined /></a>
-        {user.role.type!=="readadmin" &&
+        {user?.role?.type!=="readadmin" &&
         <Button onClick={handlerAddNewContract} type='primary'>Добавить новый договор</Button>
         }
       </Flex>
