@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react'
 import { ReloadOutlined } from '@ant-design/icons';
 import ModalViewContractor from './ModalViewContractor';
 import ModalAddContractor from './ModalAddContractor';
+import useAuth from '../../store/authStore'
 const defaultPageSize = 10
 const defaultPage = 1
 
 export default function TableContractor() {
+  const { user } = useAuth(store => store)
   const [pagination, setPagination] = useState()
   const [allContractors, setAllContractors] = useState()
   const [loading, setLoading] = useState(true)
@@ -115,7 +117,9 @@ export default function TableContractor() {
     <div>
       <Flex justify='space-between' align='center' style={{ marginBottom: 20 }}>
         <a onClick={handlerReload}><ReloadOutlined /></a>
-        <Button onClick={handlerAddNewContract} type='primary'>Добавить нового подрядчика</Button>
+        {user.role.type !== "readadmin" &&
+          <Button onClick={handlerAddNewContract} type='primary'>Добавить нового подрядчика</Button>
+        }
       </Flex>
       <Table
         columns={columns}
@@ -147,8 +151,8 @@ export default function TableContractor() {
         onCancel={closeModalAddContract}
         footer={false}
       >
-          <ModalAddContractor isOpenModalAddContract={isOpenModalAddContract} closeModalAddContract={closeModalAddContract} update={handlerReload}/>
-        
+        <ModalAddContractor isOpenModalAddContract={isOpenModalAddContract} closeModalAddContract={closeModalAddContract} update={handlerReload} />
+
 
       </Modal>
 

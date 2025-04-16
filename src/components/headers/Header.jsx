@@ -1,12 +1,10 @@
 import { Flex, Image } from 'antd'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, } from 'react'
 import ButtonLogout from './ButtonLogout'
-import Title from 'antd/es/typography/Title'
 import Text from 'antd/es/typography/Text'
 import ButtonBack from './ButtonBack'
 import Container from '../Container'
 import useAuth from '../../store/authStore'
-import { useLocation } from 'react-router-dom'
 import logo from '../../img/logo_mosoblenergo.svg'
 
 export default function Header() {

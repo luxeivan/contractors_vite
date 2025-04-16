@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react'
 import ModalViewContract from './ModalViewContract';
 import ModalAddContract from './ModalAddContract';
 import { ReloadOutlined } from '@ant-design/icons';
+import useAuth from '../../store/authStore'
 const defaultPageSize = 10
 const defaultPage = 1
 
 export default function TableContract() {
+  const { user } = useAuth(store => store)
   const [pagination, setPagination] = useState()
   const [allContracts, setAllContracts] = useState()
   const [loading, setLoading] = useState(true)
@@ -129,7 +131,9 @@ export default function TableContract() {
     <div>
       <Flex justify='space-between' align='center' style={{ marginBottom: 20 }}>
         <a onClick={handlerReload}><ReloadOutlined /></a>
+        {user.role.type!=="readadmin" &&
         <Button onClick={handlerAddNewContract} type='primary'>Добавить новый договор</Button>
+        }
       </Flex>
       <Table
         columns={columns}
