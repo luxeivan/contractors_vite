@@ -18,14 +18,21 @@ export default function Admin() {
     <Container>
       {myContractor &&
         <>
-          <Title level={2} style={{marginBottom:5}}>{myContractor.name}</Title>
+          <Title level={2} style={{ marginBottom: 5 }}>{myContractor.name}</Title>
           <div>
-            <Text style={{color:"#555",fontStyle:"italic"}}>ИНН: {myContractor.inn} КПП: {myContractor.kpp}</Text>
+            <Text style={{ color: "#555", fontStyle: "italic" }}>ИНН: {myContractor.inn} КПП: {myContractor.kpp}</Text>
           </div>
           <Flex gap={20} style={{ padding: 20 }} wrap="wrap">
             {myContractor.contracts.map(item =>
               <Link key={item.id} to={`/dashboard/contracts/${item.documentId}`}>
-                <Card hoverable title={`Договор №${item.number} от ${dayjs(item.dateContract).format('DD.MM.YYYY')}`} >
+                <Card
+                  hoverable
+                  title={
+                    <div>
+                      <Text>Договор №{item.number}</Text>
+                      <Text style={{ color: "#888", fontStyle: "italic" }}> от {dayjs(item.dateContract).format('DD.MM.YYYY')}</Text>
+                    </div>
+                  }>
                   <Image src='https://infostart.ru/upload/iblock/d48/d489a1a6bb10747aa17e33be612ef5ff.png' preview={false} width={200} />
                 </Card>
               </Link>
