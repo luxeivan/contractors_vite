@@ -63,7 +63,7 @@ export async function getMyContractor() {
 export async function getAllContracts(pageSize = 5, page = 1) {
 
     try {
-        const res = await axios.get(server + `/api/contracts?pagination[pageSize]=${pageSize}&pagination[page]=${page}&populate[0]=contractor&populate[1]=steps`, {
+        const res = await axios.get(server + `/api/contracts?pagination[pageSize]=${pageSize}&pagination[page]=${page}&populate[0]=contractor&populate[1]=steps&sort=dateContract:desc`, {
             headers: {
 
                 Authorization: `Bearer ${await getJwt()}`
@@ -82,7 +82,7 @@ export async function getAllContracts(pageSize = 5, page = 1) {
 export async function getAllContractors(pageSize = 5, page = 1) {
 
     try {
-        const res = await axios.get(server + `/api/contractors?pagination[pageSize]=${pageSize}&pagination[page]=${page}`, {
+        const res = await axios.get(server + `/api/contractors?pagination[pageSize]=${pageSize}&pagination[page]=${page}&sort=createdAt:desc`, {
             headers: {
 
                 Authorization: `Bearer ${await getJwt()}`

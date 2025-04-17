@@ -23,7 +23,7 @@ export default function Admin() {
             <Text style={{ color: "#555", fontStyle: "italic" }}>ИНН: {myContractor.inn} КПП: {myContractor.kpp}</Text>
           </div>
           <Flex gap={20} style={{ padding: 20 }} wrap="wrap">
-            {myContractor.contracts.map(item =>
+            {myContractor.contracts.sort((a, b) => new Date(b.dateContract) - new Date(a.dateContract)).map(item =>
               <Link key={item.id} to={`/dashboard/contracts/${item.documentId}`}>
                 <Card
                   hoverable
