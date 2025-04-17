@@ -1,5 +1,6 @@
 import { getAllContracts } from '../../lib/getData';
-import { Table, Space,  Flex, Switch, Button, Modal } from 'antd';
+import { Table, Space, Flex, Switch, Button, Modal, Tag } from 'antd';
+import Text from 'antd/es/typography/Text';
 import React, { useEffect, useState } from 'react'
 import ModalViewContract from './ModalViewContract';
 import ModalAddContract from './ModalAddContract';
@@ -16,6 +17,8 @@ export default function TableContract() {
   const [isOpenModal, setIsOpenModal] = useState(false)
   const [isOpenModalAddContract, setIsOpenModalAddContract] = useState(false)
   const [docIdForModal, setDocIdForModal] = useState(null)
+  const [onlyAtWork, setOnlyAtWork] = useState(false)
+  const [onlySocial, setOnlySocial] = useState(false)
 
   const fetching = async (defaultPageSize, defaultPage) => {
     try {
@@ -63,7 +66,7 @@ export default function TableContract() {
       title: 'Социальный объект',
       dataIndex: 'social',
       key: 'social',
-      render: bool => <Switch disabled defaultValue={bool} />,
+      render: bool => bool?<Tag color={"blue"}>Социальный</Tag>:false,
     },
     {
       title: 'Кол-во выполненых этапов',
@@ -78,6 +81,12 @@ export default function TableContract() {
       render: text => <span>{text}</span>,
     },
     {
+      title: 'Статус',
+      dataIndex: 'status',
+      key: 'status',
+      render: completed => completed ? <Tag color={"volcano"}>Завершен</Tag> : <Tag color={"green"}>В работе</Tag>,
+    },
+    {
       title: 'Действия',
       key: 'action',
       render: (_, record) => (
@@ -87,14 +96,35 @@ export default function TableContract() {
       ),
     },
   ];
-  const data = allContracts?.data?.map(item => ({
+  const data = allContracts?.data?.filter(item => {
+    if (onlyAtWork) {
+      if (item.completed) {
+        return false
+      } else {
+        return true
+      }
+    } else {
+      return true
+    }
+  }).filter(item => {
+    if (onlySocial) {
+      if (item.social) {
+        return true
+      } else {
+        return false
+      }
+    } else {
+      return true
+    }
+  }).map(item => ({
     key: item.id,
     documentId: item.documentId,
     number: item.number,
-    dateContract:item.dateContract,
+    dateContract: item.dateContract,
     description: item.description,
     contractor: item.contractor?.name,
     social: item.social,
+    status: item.completed,
     stepsComplited: item.steps?.length,
     contractor_inn_kpp: `${item.contractor?.inn}/${item.contractor?.kpp}`
   }))
@@ -130,9 +160,19 @@ export default function TableContract() {
   return (
     <div>
       <Flex justify='space-between' align='center' style={{ marginBottom: 20 }}>
-        <a onClick={handlerReload}><ReloadOutlined /></a>
-        {user?.role?.type!=="readadmin" &&
-        <Button onClick={handlerAddNewContract} type='primary'>Добавить новый договор</Button>
+        <Flex gap={20}>
+          <a onClick={handlerReload}><ReloadOutlined /></a>
+          <Flex gap={10}>
+            <Text>Только в работе:</Text>
+            <Switch onChange={() => { setOnlyAtWork(!onlyAtWork) }} />
+          </Flex>
+          <Flex gap={10}>
+            <Text>Только социальные объекты:</Text>
+            <Switch onChange={() => { setOnlySocial(!onlySocial) }} />
+          </Flex>
+        </Flex>
+        {user?.role?.type !== "readadmin" &&
+          <Button onClick={handlerAddNewContract} type='primary'>Добавить новый договор</Button>
         }
       </Flex>
       <Table
@@ -165,7 +205,7 @@ export default function TableContract() {
         onCancel={closeModalAddContract}
         footer={false}
       >
-        <ModalAddContract isOpenModalAddContract={isOpenModalAddContract} closeModalAddContract={closeModalAddContract} update={handlerReload}/>
+        <ModalAddContract isOpenModalAddContract={isOpenModalAddContract} closeModalAddContract={closeModalAddContract} update={handlerReload} />
       </Modal>
 
       {/* <Pagination

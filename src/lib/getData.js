@@ -207,11 +207,9 @@ export async function updatePassword(userId, newPassword) {
     try {
         // console.log("userId", userId);
         // console.log("newPassword", newPassword);
-        
+
         const resContract = await axios.put(server + `/api/users/${userId}`, {
-            
-                password: newPassword
-            
+            password: newPassword
         }, {
             headers: {
                 Authorization: `Bearer ${await getJwt()}`
@@ -220,11 +218,36 @@ export async function updatePassword(userId, newPassword) {
         // ---------------------------------------------------------
         if (resContract.data) {
             // console.log("resContract.data", resContract.data);
-            
             return resContract.data.data
+        }else{
+            return false
         }
-
     } catch (error) {
         console.log("error changePassword :", error);
+        return false
+    }
+}
+export async function completedContract(documentId) {
+    try {
+
+        const resContract = await axios.put(server + `/api/contracts/${documentId}`, {
+            data: {
+                completed: true
+            }
+        }, {
+            headers: {
+                Authorization: `Bearer ${await getJwt()}`
+            }
+        })
+        // ---------------------------------------------------------
+        if (resContract.data) {
+            // console.log("resContract.data", resContract.data);
+            return resContract.data.data
+        }else{
+            return false
+        }
+    } catch (error) {
+        console.log("error changePassword :", error);
+        return false
     }
 }

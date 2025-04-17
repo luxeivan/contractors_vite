@@ -1,5 +1,5 @@
-import { getContractItem } from '../../lib/getData'
-import { Descriptions, Flex, Modal, Spin } from 'antd'
+import { completedContract, getContractItem } from '../../lib/getData'
+import { Button, Descriptions, Flex, Modal, Spin, Tag } from 'antd'
 import React, { useEffect, useState } from 'react'
 import ViewSteps from './ViewSteps'
 import Title from 'antd/es/typography/Title'
@@ -61,22 +61,37 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
             {
                 key: '5',
                 label: 'Файл договора',
-                children: contract.document?<Link to={`${server}${contract.document.url}`} target='_blank'>{contract.document.name}</Link>:<Text style={{color:"#f00"}}>файл отсутствует</Text>,
+                children: contract.document ? <Link to={`${server}${contract.document.url}`} target='_blank'>{contract.document.name}</Link> : <Text style={{ color: "#f00" }}>файл отсутствует</Text>,
             },
         ]
+    }
+    const handlerComplete = async (documentIdContract) => {
+        if (await completedContract(documentIdContract)) {
+            await fetching(documentIdContract)
+        }
     }
     return (
         <Modal
             open={isOpenModal}
             onCancel={closeModal}
-            title={!loading && contract ? `Договор№${contract.number}` : 'Загрузка договора...'}
+            title={!loading && contract ? <Flex gap={20}>
+                <Text style={{ fontSize: 16 }}>Договор№{contract.number}  </Text>
+                <Flex>
+                    {contract.completed ? <Tag color={"volcano"}>Завершен</Tag> : <Tag color={"green"}>В работе</Tag>}
+                    {contract.social && <Tag color={"blue"}>Социальный</Tag>}
+                </Flex>
+            </Flex>
+                : 'Загрузка договора...'}
             footer={false}
         >
             {loading && <Flex justify='center'><Spin /></Flex>}
+
             {!loading && contract &&
                 <Flex vertical gap={20}>
                     <Descriptions items={propertiesContract} column={1} />
-                    {contract.steps.length === 0 ? <Title level={4} style={{color:"#f00"}}>Этапов не добавлено</Title> : <ViewSteps steps={contract.steps} />
+                    {contract.steps.length === 0 ? <Title level={4} style={{ color: "#f00" }}>Этапов не добавлено</Title> : <ViewSteps steps={contract.steps} />}
+                    {!contract.completed &&
+                        <Button danger onClick={() => { handlerComplete(contract.documentId) }}>Завершить договор</Button>
                     }
                 </Flex>
             }
