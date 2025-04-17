@@ -14,7 +14,7 @@ export async function getContractItem(idContract) {
             }
         })
         if (res.data) {
-            console.log(res.data.data)
+            // console.log(res.data.data)
             return res.data.data
         }
 
@@ -124,7 +124,7 @@ export async function addNewContractor(data) {
                 Authorization: `Bearer ${await getJwt()}`
             }
         })
-        console.log(roleList);
+        // console.log(roleList);
 
         // ---------------------------------------------------
         const resUser = await axios.post(server + `/api/users`, {
@@ -219,7 +219,7 @@ export async function updatePassword(userId, newPassword) {
         })
         // ---------------------------------------------------------
         if (resContract.data) {
-            console.log("resContract.data", resContract.data);
+            // console.log("resContract.data", resContract.data);
             
             return resContract.data.data
         }
