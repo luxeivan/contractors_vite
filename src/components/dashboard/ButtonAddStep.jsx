@@ -129,7 +129,7 @@ export default function ButtonAddStep({ idContract, countSteps, updateContract }
                         <Input.TextArea />
                     </Form.Item>
                     <Flex justify='end'>
-                        <Text style={{ color: "#999", fontSize: 10 }}>Размер файлов суммарно не должен превышать 20МБ</Text>
+                        <Text style={{ color: "#999", fontSize: 12 }}>Размер файлов суммарно не должен превышать <span style={{color:"#8f0000",fontWeight:600}}>20МБ</span></Text>
                     </Flex>
                     <Upload
                         {...props}
