@@ -10,12 +10,12 @@ import useAuth from '../store/authStore'
 import { Navigate, useNavigate } from 'react-router-dom'
 // const server = process.env.SERVER_API
 export default function Admin() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (!localStorage.getItem('jwt')) {
-      navigate('/login')
-    }
-  }, [])
+  // const navigate = useNavigate();
+  // useEffect(() => {
+  //   if (!localStorage.getItem('jwt')) {
+  //     navigate('/login')
+  //   }
+  // }, [])
   const items = [
     {
       key: '1',

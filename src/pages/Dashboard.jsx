@@ -8,15 +8,15 @@ import Container from '../components/Container'
 import dayjs from 'dayjs'
 import { ReloadOutlined } from '@ant-design/icons'
 export default function Admin() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { myContractor, fetchMyContractor } = useDataDashboard(store => store)
   const [onlyAtWork, setOnlyAtWork] = useState(false)
   const [onlySocial, setOnlySocial] = useState(false)
   
   useEffect(() => {
-    if (!localStorage.getItem('jwt')) {
-      navigate('/login')
-    }
+    // if (!localStorage.getItem('jwt')) {
+    //   navigate('/login')
+    // }
     fetchMyContractor()
   }, [])
   // const contractor = {contracts:[]}

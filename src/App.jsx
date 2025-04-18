@@ -8,6 +8,8 @@ import {
   Route,
   Link,
   Outlet,
+  useNavigate,
+  useLocation,
 } from 'react-router-dom';
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
@@ -21,7 +23,7 @@ import { Flex } from 'antd';
 
 
 function App() {
-
+ 
   return (
     <>
       <Router>

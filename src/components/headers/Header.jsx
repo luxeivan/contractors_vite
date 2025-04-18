@@ -8,10 +8,17 @@ import useAuth from '../../store/authStore'
 // import logo from '../../img/logo_mosoblenergo.svg'
 import logo from '../../img/MO_energo-logo-main.png'
 import styles from './header.module.css'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 export default function Header() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
   const { user, getUser } = useAuth(store => store)
   useEffect(()=>{
+    if (location.pathname !== '/login' && !localStorage.getItem('jwt')) {
+      navigate('/login')
+    }
     getUser()
   },[])
   return (
