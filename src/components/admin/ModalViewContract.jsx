@@ -85,6 +85,7 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
             </Flex>
                 : 'Загрузка договора...'}
             footer={false}
+            width={{xl:900,xxl:1400}}
         >
             {loading && <Flex justify='center'><Spin /></Flex>}
 
