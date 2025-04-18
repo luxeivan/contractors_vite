@@ -1,5 +1,5 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Modal, Upload, Typography, Flex, Popconfirm } from 'antd'
+import { Button, Form, Input, Modal, Upload, Typography, Flex, Popconfirm, message } from 'antd'
 import axios from 'axios';
 import React, { useState } from 'react'
 import { server } from '../../config';
@@ -14,10 +14,18 @@ export default function ButtonAddStep({ idContract, countSteps, updateContract }
     const [form] = Form.useForm();
     const jwt = localStorage.getItem('jwt')
     // console.log(countSteps);
+    const [messageApi, contextHolder] = message.useMessage();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [fileList, setFileList] = useState([]);
     const [uploading, setUploading] = useState(false);
     async function handleUpload(values) {
+        let summa = fileList.reduce((sum, current) => sum + current.size, 0);
+        if (summa > 20 * 1024 * 1024) {
+            return messageApi.open({
+                type: 'error',
+                content: 'Размер файлов превышает 20МБ',
+            });
+        }
         // console.log("values", values)
         const formData = new FormData();
         fileList.forEach(file => {
@@ -90,7 +98,7 @@ export default function ButtonAddStep({ idContract, countSteps, updateContract }
             setFileList(newFileList);
         },
         beforeUpload: (file) => {
-            // console.log("file", file);
+            console.log("file", file);
             setFileList(prev => ([...prev, file]));
             return false;
         },
@@ -98,6 +106,7 @@ export default function ButtonAddStep({ idContract, countSteps, updateContract }
     };
     return (
         <>
+        {contextHolder}
             <Button type='primary' onClick={showModal}>Добавить выполненный этап</Button>
             <Modal title="Добавить выполненный этап" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} footer={false}>
                 <Form
@@ -142,8 +151,8 @@ export default function ButtonAddStep({ idContract, countSteps, updateContract }
                         title="Добавить этап"
                         description={<Flex vertical>
                             <Text>Пожалуйста, проверьте внесенные данные!</Text>
-                            <Text style={{ color: "#8f0000", fontWeight: 600 }}>После добавления изменить их нельзя.</Text> 
-                            </Flex>}
+                            <Text style={{ color: "#8f0000", fontWeight: 600 }}>После добавления изменить их нельзя.</Text>
+                        </Flex>}
                         onConfirm={() => {
                             form.submit()
                         }}

@@ -31,20 +31,21 @@ export default function Admin() {
           </div>
           <Flex justify='space-between' align='center' style={{ margin: "20px 0" }}>
             <Flex gap={20}>
-              <Tooltip title="Обновить">
+              {/* <Tooltip title="Обновить">
                 <a onClick={() => { fetchMyContractor() }}><ReloadOutlined /></a>
-              </Tooltip>
+              </Tooltip> */}
               <Flex gap={10}>
-                <Text>В работе:</Text>
+                <Text>Отображать только в работе:</Text>
                 <Switch onChange={() => { setOnlyAtWork(!onlyAtWork) }} />
               </Flex>
               <Flex gap={10}>
-                <Text>Социальные объекты:</Text>
+                <Text>Отображать только социальные объекты:</Text>
                 <Switch onChange={() => { setOnlySocial(!onlySocial) }} />
               </Flex>
             </Flex>
           </Flex>
           <Flex gap={20} style={{ margin: "20px 0" }} wrap="wrap">
+            
             {myContractor.contracts.filter(item => {
               if (onlyAtWork) {
                 if (item.completed) {
@@ -89,7 +90,7 @@ export default function Admin() {
                     </Flex>
                   </Card>
                 </Link>
-              )}
+              ) }
           </Flex>
         </>
       }
