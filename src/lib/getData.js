@@ -7,12 +7,7 @@ function getJwt() {
     return localStorage.getItem('jwt')
 }
 
-const client = localStorage.getItem('jwt') ? strapi({
-    baseURL: `${server}/api`,
-    auth: localStorage.getItem('jwt') 
-}):strapi({
-    baseURL: `${server}/api`,
-})
+
 
 // Запрос одного договора для пользователя--------------------------------------------------------------------------
 export async function getContractItem(idContract) {
@@ -70,7 +65,10 @@ export async function getMyContractor() {
 
 // Запрос всех договоров для админской учетки--------------------------------------------------------------------------
 export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
-
+    const client = strapi({
+        baseURL: `${server}/api`,
+        auth: localStorage.getItem('jwt') || undefined
+    })
     try {
         const contracts = client.collection('contracts');
 
