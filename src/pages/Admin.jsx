@@ -17,7 +17,7 @@ export default function Admin() {
   const items = [
     {
       key: '1',
-      label: 'Договора',
+      label: 'Договоры',
       children: <TableContract />,
     },
     {

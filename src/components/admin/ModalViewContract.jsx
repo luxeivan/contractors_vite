@@ -43,7 +43,7 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
             {
                 key: '4',
                 label: 'Дата договора',
-                children: <span>{dayjs(contract.dateContract).format('DD.MM.YYYY HH:mm')}</span>,
+                children: <span>{dayjs(contract.dateContract).format('DD.MM.YYYY')}</span>,
             },
             {
                 key: '1',
