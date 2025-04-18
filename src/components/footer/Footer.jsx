@@ -4,8 +4,6 @@ import { Flex, Typography, Image } from 'antd'
 import dayjs from 'dayjs'
 import styles from './footer.module.css'
 import lineBg from "../../img/line-bg.svg"
-import lineBgBlack from "../../img/line-bg-black.svg"
-import fotograph from "../../img/fotograph.png"
 import substation from "../../img/substation-b-and-w.png"
 
 export default function Footer() {
