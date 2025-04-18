@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Title from 'antd/es/typography/Title'
 import Text from 'antd/es/typography/Text'
-import { Card, Flex, Image, Switch, Tag } from 'antd'
+import { Card, Flex, Image,  Switch, Tag, Tooltip } from 'antd'
 import { Link } from 'react-router-dom'
 import useDataDashboard from '../store/useDataDashboard'
 import Container from '../components/Container'
@@ -27,7 +27,9 @@ export default function Admin() {
           </div>
           <Flex justify='space-between' align='center' style={{ margin: "20px 0" }}>
             <Flex gap={20}>
-              <a onClick={() => { fetchMyContractor() }}><ReloadOutlined /></a>
+              <Tooltip title="Обновить">
+                <a onClick={() => { fetchMyContractor() }}><ReloadOutlined /></a>
+              </Tooltip>
               <Flex gap={10}>
                 <Text>В работе:</Text>
                 <Switch onChange={() => { setOnlyAtWork(!onlyAtWork) }} />

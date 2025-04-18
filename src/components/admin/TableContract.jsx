@@ -1,5 +1,5 @@
 import { getAllContractors, getAllContracts } from '../../lib/getData';
-import { Table, Space, Flex, Switch, Button, Modal, Tag, Select } from 'antd';
+import { Table, Space, Flex, Switch, Button, Modal, Tag, Select,  Tooltip } from 'antd';
 import Text from 'antd/es/typography/Text';
 import React, { useEffect, useState } from 'react'
 import ModalViewContract from './ModalViewContract';
@@ -26,7 +26,7 @@ export default function TableContract() {
   const fetching = async (defaultPageSize, defaultPage) => {
     try {
       setLoading(true)
-      const temp = await getAllContracts(defaultPageSize, defaultPage, selectedContractor)
+      const temp = await getAllContracts(defaultPageSize, defaultPage, { contractorId: selectedContractor, social: onlySocial, completed: onlyAtWork })
       // console.log("temp", temp)
       setAllContracts(temp)
       setLoading(false)
@@ -58,7 +58,7 @@ export default function TableContract() {
   useEffect(() => {
     fetching(defaultPageSize, defaultPage)
     fetchingContractors(100, 1)
-  }, [selectedContractor])
+  }, [selectedContractor, onlyAtWork, onlySocial])
 
   // console.log("allContracts", allContracts);
   const columns = [
@@ -119,27 +119,7 @@ export default function TableContract() {
       ),
     },
   ];
-  const data = allContracts?.data?.filter(item => {
-    if (onlyAtWork) {
-      if (item.completed) {
-        return false
-      } else {
-        return true
-      }
-    } else {
-      return true
-    }
-  }).filter(item => {
-    if (onlySocial) {
-      if (item.social) {
-        return true
-      } else {
-        return false
-      }
-    } else {
-      return true
-    }
-  }).map(item => ({
+  const data = allContracts?.data?.map(item => ({
     key: item.id,
     documentId: item.documentId,
     number: item.number,
@@ -179,14 +159,16 @@ export default function TableContract() {
   const closeModalAddContract = async () => {
     setIsOpenModalAddContract(false)
   }
-  console.log("listContractors", listContractors);
-  console.log("selectedContractor", selectedContractor);
+  // console.log("listContractors", listContractors);
+  // console.log("selectedContractor", selectedContractor);
 
   return (
     <div>
       <Flex justify='space-between' align='center' style={{ marginBottom: 20 }}>
         <Flex gap={20} align='center'>
-          <a onClick={handlerReload}><ReloadOutlined /></a>
+          <Tooltip title="Обновить">
+            <a onClick={handlerReload}><ReloadOutlined /></a>
+          </Tooltip>
           <Flex gap={10}>
             <Text>В работе:</Text>
             <Switch onChange={() => { setOnlyAtWork(!onlyAtWork) }} />

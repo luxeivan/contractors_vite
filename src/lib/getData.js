@@ -1,9 +1,16 @@
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { server } from "../config";
-async function getJwt() {
+import { strapi } from '@strapi/client';
+
+function getJwt() {
     return localStorage.getItem('jwt')
 }
+
+const client = strapi({
+    baseURL: `${server}/api`,
+    auth: getJwt()
+});
 
 // Запрос одного договора для пользователя--------------------------------------------------------------------------
 export async function getContractItem(idContract) {
@@ -60,21 +67,48 @@ export async function getMyContractor() {
 }
 
 // Запрос всех договоров для админской учетки--------------------------------------------------------------------------
-export async function getAllContracts(pageSize = 5, page = 1, contractorId = null) {
+export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
 
     try {
-        const res = await axios.get(server + `/api/contracts?pagination[pageSize]=${pageSize}&pagination[page]=${page}&populate[0]=contractor&populate[1]=steps&sort=dateContract:desc${contractorId ? '&filters[contractor][id][$eq]=' + contractorId : ''}`, {
-            headers: {
+        const contracts = client.collection('contracts');
 
-                Authorization: `Bearer ${await getJwt()}`
+        const allContracts = await contracts.find({
+            filters: {
+                contractor: filters.contractorId ? {
+                    id: {
+                        $eq: filters.contractorId
+                    }
+                } : undefined,
+                social: filters.social ? filters.social : undefined,
+                completed: filters.completed ? false : undefined
+            },
+            populate: {
+                steps: true,
+                contractor: true,
+
+            },
+            sort: {
+                dateContract: "desc"
+            },
+            pagination: {
+                page: page,
+                pageSize: pageSize,
             }
-        })
-        if (res.data) {
-            return res.data
+        });
+        // console.log("allContracts", allContracts.data);
+        // const res = await axios.get(server + `/api/contracts?pagination[pageSize]=${pageSize}&pagination[page]=${page}&populate[0]=contractor&populate[1]=steps&sort=dateContract:desc${contractorId ? '&filters[contractor][id][$eq]=' + contractorId : ''}`, {
+        //     headers: {
+
+        //         Authorization: `Bearer ${await getJwt()}`
+        //     }
+        // })
+        if (allContracts.data) {
+            return allContracts
         }
         // console.log("contractors:", contractors);
     } catch (error) {
         console.log("error getAllContracts:", error);
+
     }
 }
 
