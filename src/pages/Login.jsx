@@ -22,7 +22,7 @@ export default function Login() {
                 <Flex vertical justify='center' align='center' style={{ height: "50vh" }}>
                     {/* <Title style={{color:"#555",fontWeight:100,fontStyle:"italic",fontSize:48}}>Сервис по добавлению фотоотчетов</Title>  */}
                     {/* <Title>Сервис по добавлению фотоотчетов</Title> */}
-                    <Title level={2}>Авторизация</Title>
+                    <Title level={2} style={{color:"#555",fontWeight:100,fontStyle:"italic"}}>Сервис предоставления фотоотчетов</Title>
                     <FormAuth />
                 </Flex>
             </Container>

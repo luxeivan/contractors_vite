@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Form, Input, Button, Alert } from 'antd'
+import { Form, Input, Button, Alert, Flex, Typography } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '../../store/authStore'
 export default function FormAuth() {
@@ -7,7 +7,7 @@ export default function FormAuth() {
     const [auth, setAuth] = useState(false)
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate();
-    const { changeUserAndRole,getUser,login,user } = useAuth(store => store)
+    const { changeUserAndRole, getUser, login, user } = useAuth(store => store)
 
 
     async function onFinish(values) {
@@ -51,9 +51,9 @@ export default function FormAuth() {
         <>
             <Form
                 name="auth"
-                labelCol={{ span: 10 }}
-                wrapperCol={{ span: 32 }}
-                style={{ maxWidth: 1000, width:"30%",minWidth:300}}
+                labelCol={{ span:  6}}
+                wrapperCol={{ span: 18 }}
+                style={{ maxWidth: 1000, width: "30%", minWidth: 300 }}
                 initialValues={{ remember: true }}
                 onFinish={onFinish}
                 onFinishFailed={onFinishFailed}
@@ -74,10 +74,13 @@ export default function FormAuth() {
                 >
                     <Input.Password />
                 </Form.Item>
+                <Flex justify='end' style={{marginTop:-20,marginBottom:20}}>
+                    <Typography.Text style={{ color: "#999", fontSize: 12 }}>Получить учетные данные можно у представителя компании</Typography.Text>
+                </Flex>
 
                 <Form.Item label={null}>
                     <Button type="primary" htmlType="submit" disabled={loading}>
-                        Авторизоваться
+                        Войти
                     </Button>
                 </Form.Item>
             </Form>

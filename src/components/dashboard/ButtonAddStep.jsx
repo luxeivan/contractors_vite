@@ -141,8 +141,8 @@ export default function ButtonAddStep({ idContract, countSteps, updateContract }
                     <Popconfirm
                         title="Добавить этап"
                         description={<Flex vertical>
-                            <Text>Пожалуйста проверьте все данные!</Text>
-                            <Text style={{ color: "#8f0000", fontWeight: 600 }}>После добавления этапа скорректировать его НЕвозможно.</Text> 
+                            <Text>Пожалуйста, проверьте внесенные данные!</Text>
+                            <Text style={{ color: "#8f0000", fontWeight: 600 }}>После добавления изменить их нельзя.</Text> 
                             </Flex>}
                         onConfirm={() => {
                             form.submit()
