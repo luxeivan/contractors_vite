@@ -1,5 +1,5 @@
-import { getAllContracts } from '../../lib/getData';
-import { Table, Space, Flex, Switch, Button, Modal, Tag } from 'antd';
+import { getAllContractors, getAllContracts } from '../../lib/getData';
+import { Table, Space, Flex, Switch, Button, Modal, Tag, Select } from 'antd';
 import Text from 'antd/es/typography/Text';
 import React, { useEffect, useState } from 'react'
 import ModalViewContract from './ModalViewContract';
@@ -19,23 +19,46 @@ export default function TableContract() {
   const [docIdForModal, setDocIdForModal] = useState(null)
   const [onlyAtWork, setOnlyAtWork] = useState(false)
   const [onlySocial, setOnlySocial] = useState(false)
+  const [listContractors, setListContractors] = useState(null)
+  const [selectedContractor, setSelectedContractor] = useState(null)
+
 
   const fetching = async (defaultPageSize, defaultPage) => {
     try {
       setLoading(true)
-      const temp = await getAllContracts(defaultPageSize, defaultPage)
+      const temp = await getAllContracts(defaultPageSize, defaultPage, selectedContractor)
       // console.log("temp", temp)
       setAllContracts(temp)
       setLoading(false)
     } catch (error) {
       console.log(error);
-
     }
-
   }
+  const fetchingContractors = async (defaultPageSize, defaultPage) => {
+    try {
+      const res = await getAllContractors(defaultPageSize, defaultPage)
+      let temp = res?.data?.sort((a, b) => {
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+      }).map(item => ({
+        value: item.id, label: item.name
+      }))
+      temp.unshift({
+        value: null, label: "Всех"
+      })
+      setListContractors(temp)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
     fetching(defaultPageSize, defaultPage)
-  }, [])
+    fetchingContractors(100, 1)
+  }, [selectedContractor])
 
   // console.log("allContracts", allContracts);
   const columns = [
@@ -66,7 +89,7 @@ export default function TableContract() {
       title: 'Социальный объект',
       dataIndex: 'social',
       key: 'social',
-      render: bool => bool?<Tag color={"blue"}>Социальный</Tag>:false,
+      render: bool => bool ? <Tag color={"blue"}>Социальный</Tag> : false,
     },
     {
       title: 'Кол-во выполненых этапов',
@@ -84,7 +107,7 @@ export default function TableContract() {
       title: 'Статус',
       dataIndex: 'status',
       key: 'status',
-      render: completed => completed ? <Tag color={"volcano"}>Завершен</Tag> : <Tag color={"green"}>В работе</Tag>,
+      render: completed => completed ? <Tag color={"volcano"}>Архивный</Tag> : <Tag color={"green"}>В работе</Tag>,
     },
     {
       title: 'Действия',
@@ -156,11 +179,13 @@ export default function TableContract() {
   const closeModalAddContract = async () => {
     setIsOpenModalAddContract(false)
   }
+  console.log("listContractors", listContractors);
+  console.log("selectedContractor", selectedContractor);
 
   return (
     <div>
       <Flex justify='space-between' align='center' style={{ marginBottom: 20 }}>
-        <Flex gap={20}>
+        <Flex gap={20} align='center'>
           <a onClick={handlerReload}><ReloadOutlined /></a>
           <Flex gap={10}>
             <Text>Только в работе:</Text>
@@ -169,6 +194,17 @@ export default function TableContract() {
           <Flex gap={10}>
             <Text>Только социальные объекты:</Text>
             <Switch onChange={() => { setOnlySocial(!onlySocial) }} />
+          </Flex>
+          <Flex gap={10} align='center'>
+            <Text>Только от:</Text>
+            <Select
+              defaultValue="Всех"
+              style={{ width: 300 }}
+              onChange={(value) => {
+                setSelectedContractor(value)
+              }}
+              options={listContractors}
+            />
           </Flex>
         </Flex>
         {user?.role?.type !== "readadmin" &&
@@ -198,7 +234,7 @@ export default function TableContract() {
         onChange={handlerChange}
         loading={loading}
       />
-      <ModalViewContract isOpenModal={isOpenModal} closeModal={closeModal} docIdForModal={docIdForModal} />
+      <ModalViewContract isOpenModal={isOpenModal} closeModal={closeModal} docIdForModal={docIdForModal} update={handlerReload} />
       <Modal
         title="Добавление нового договора"
         open={isOpenModalAddContract}

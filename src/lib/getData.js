@@ -60,10 +60,10 @@ export async function getMyContractor() {
 }
 
 // Запрос всех договоров для админской учетки--------------------------------------------------------------------------
-export async function getAllContracts(pageSize = 5, page = 1) {
+export async function getAllContracts(pageSize = 5, page = 1, contractorId = null) {
 
     try {
-        const res = await axios.get(server + `/api/contracts?pagination[pageSize]=${pageSize}&pagination[page]=${page}&populate[0]=contractor&populate[1]=steps&sort=dateContract:desc`, {
+        const res = await axios.get(server + `/api/contracts?pagination[pageSize]=${pageSize}&pagination[page]=${page}&populate[0]=contractor&populate[1]=steps&sort=dateContract:desc${contractorId ? '&filters[contractor][id][$eq]=' + contractorId : ''}`, {
             headers: {
 
                 Authorization: `Bearer ${await getJwt()}`
@@ -219,7 +219,7 @@ export async function updatePassword(userId, newPassword) {
         if (resContract.data) {
             // console.log("resContract.data", resContract.data);
             return resContract.data.data
-        }else{
+        } else {
             return false
         }
     } catch (error) {
@@ -243,7 +243,7 @@ export async function completedContract(documentId) {
         if (resContract.data) {
             // console.log("resContract.data", resContract.data);
             return resContract.data.data
-        }else{
+        } else {
             return false
         }
     } catch (error) {

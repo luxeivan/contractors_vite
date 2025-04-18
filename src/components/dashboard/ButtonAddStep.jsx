@@ -1,5 +1,5 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Modal, Upload, Typography,Flex } from 'antd'
+import { Button, Form, Input, Modal, Upload, Typography, Flex, Popconfirm } from 'antd'
 import axios from 'axios';
 import React, { useState } from 'react'
 import { server } from '../../config';
@@ -129,7 +129,7 @@ export default function ButtonAddStep({ idContract, countSteps, updateContract }
                         <Input.TextArea />
                     </Form.Item>
                     <Flex justify='end'>
-                        <Text style={{ color: "#999", fontSize: 12 }}>Размер файлов суммарно не должен превышать <span style={{color:"#8f0000",fontWeight:600}}>20МБ</span></Text>
+                        <Text style={{ color: "#999", fontSize: 12 }}>Размер файлов суммарно не должен превышать <span style={{ color: "#8f0000", fontWeight: 600 }}>20МБ</span></Text>
                     </Flex>
                     <Upload
                         {...props}
@@ -138,15 +138,30 @@ export default function ButtonAddStep({ idContract, countSteps, updateContract }
                     >
                         <Button icon={<UploadOutlined />}>Выбрать фотографии</Button>
                     </Upload>
-                    <Button
-                        type="primary"
-                        htmlType='submit'
-                        disabled={fileList.length === 0}
-                        loading={uploading}
-                        style={{ marginTop: 16 }}
+                    <Popconfirm
+                        title="Добавить этап"
+                        description={<Flex vertical>
+                            <Text>Пожалуйста проверьте все данные!</Text>
+                            <Text style={{ color: "#8f0000", fontWeight: 600 }}>После добавления этапа скорректировать его НЕвозможно.</Text> 
+                            </Flex>}
+                        onConfirm={() => {
+                            form.submit()
+                        }}
+                        // onCancel={cancel}
+                        okText="Добавить"
+                        cancelText="Не добавлять"
                     >
-                        {uploading ? 'Добавляется...' : 'Добавить этап'}
-                    </Button>
+
+                        <Button
+                            type="primary"
+                            // htmlType='submit'
+                            disabled={fileList.length === 0}
+                            loading={uploading}
+                            style={{ marginTop: 16 }}
+                        >
+                            {uploading ? 'Добавляется...' : 'Добавить этап'}
+                        </Button>
+                    </Popconfirm>
                 </Form>
             </Modal>
         </>

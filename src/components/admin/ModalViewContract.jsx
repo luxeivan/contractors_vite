@@ -1,5 +1,5 @@
 import { completedContract, getContractItem } from '../../lib/getData'
-import { Button, Descriptions, Flex, Modal, Spin, Tag } from 'antd'
+import { Button, Descriptions, Flex, Modal, Popconfirm, Spin, Tag } from 'antd'
 import React, { useEffect, useState } from 'react'
 import ViewSteps from './ViewSteps'
 import Title from 'antd/es/typography/Title'
@@ -7,8 +7,10 @@ import Text from 'antd/es/typography/Text'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
 import { server } from "../../config";
+import useAuth from '../../store/authStore'
 
-export default function ModalViewContract({ isOpenModal, closeModal, docIdForModal }) {
+export default function ModalViewContract({ isOpenModal, closeModal, docIdForModal,update }) {
+    const { user } = useAuth(store => store)
     const [contract, setContracts] = useState(null)
     const [loading, setLoading] = useState(true)
     // console.log(docIdForModal);
@@ -77,7 +79,7 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
             title={!loading && contract ? <Flex gap={20}>
                 <Text style={{ fontSize: 16 }}>Договор№{contract.number}  </Text>
                 <Flex>
-                    {contract.completed ? <Tag color={"volcano"}>Завершен</Tag> : <Tag color={"green"}>В работе</Tag>}
+                    {contract.completed ? <Tag color={"volcano"}>Архивный</Tag> : <Tag color={"green"}>В работе</Tag>}
                     {contract.social && <Tag color={"blue"}>Социальный</Tag>}
                 </Flex>
             </Flex>
@@ -90,8 +92,24 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
                 <Flex vertical gap={20}>
                     <Descriptions items={propertiesContract} column={1} />
                     {contract.steps.length === 0 ? <Title level={4} style={{ color: "#f00" }}>Этапов не добавлено</Title> : <ViewSteps steps={contract.steps} />}
-                    {!contract.completed &&
-                        <Button danger onClick={() => { handlerComplete(contract.documentId) }}>Завершить договор</Button>
+                    {user?.role?.type !== "readadmin" && !contract.completed &&
+                        <Popconfirm
+                            title="Добавить в архив"
+                            description="После добавления в архив пользователь не сможет добавлять этапы по договору"
+                            onConfirm={() => { 
+                                handlerComplete(contract.documentId) 
+                                update()
+                            }}
+                            // onCancel={cancel}
+                            okText="Добавить"
+                            cancelText="Не добавлять"
+                        >
+
+                            <Button 
+                            danger 
+                            // onClick={() => { handlerComplete(contract.documentId) }}
+                            >Добавить в архив</Button>
+                        </Popconfirm>
                     }
                 </Flex>
             }
