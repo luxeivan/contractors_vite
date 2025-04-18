@@ -17,7 +17,7 @@ export default function Header() {
   return (
     <Container>
       <Flex vertical>
-        <Flex justify='space-between' align='center' style={{padding:20}} className={styles.topheader}>
+        <Flex justify='space-between' align='center' style={{padding:20,width:"100%"}} className={styles.topheader}>
           <Image src={logo} preview={false} width={300}/>
           
           {user ?
