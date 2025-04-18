@@ -19,7 +19,7 @@ export default function Footer() {
                     <Typography.Text style={{ color: "white" }}>|</Typography.Text>
                     <Typography.Text style={{ color: "white" }}>{dayjs().format("YYYY")}</Typography.Text>
                     </Flex>
-                    <img src={substation} preview={false} className={styles.fotograph}/>
+                    <img src={substation} className={styles.fotograph}/>
                 </Flex>
             </Container>
         </div>

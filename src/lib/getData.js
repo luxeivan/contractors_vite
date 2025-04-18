@@ -9,7 +9,7 @@ function getJwt() {
 
 const client = strapi({
     baseURL: `${server}/api`,
-    auth: getJwt()
+    auth: getJwt() || undefined
 });
 
 // Запрос одного договора для пользователя--------------------------------------------------------------------------
