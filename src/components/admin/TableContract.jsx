@@ -1,5 +1,5 @@
 import { getAllContractors, getAllContracts } from '../../lib/getData';
-import { Table, Space, Flex, Switch, Button, Modal, Tag, Select,  Tooltip } from 'antd';
+import { Table, Space, Flex, Switch, Button, Modal, Tag, Select, Tooltip } from 'antd';
 import Text from 'antd/es/typography/Text';
 import React, { useEffect, useState } from 'react'
 import ModalViewContract from './ModalViewContract';
@@ -47,7 +47,7 @@ export default function TableContract() {
         value: item.id, label: item.name
       }))
       temp.unshift({
-        value: null, label: "Все"
+        value: false, label: "Все"
       })
       setListContractors(temp)
     } catch (error) {
@@ -179,14 +179,16 @@ export default function TableContract() {
           </Flex>
           <Flex gap={10} align='center'>
             <Text>Подрядчик:</Text>
-            <Select
-              defaultValue="Все"
-              style={{ width: 300 }}
-              onChange={(value) => {
-                setSelectedContractor(value)
-              }}
-              options={listContractors}
-            />
+            {listContractors &&
+              <Select
+                defaultValue="Все"
+                style={{ width: 300 }}
+                onChange={(value) => {
+                  setSelectedContractor(value)
+                }}
+                options={listContractors}
+              />
+            }
           </Flex>
         </Flex>
         {user?.role?.type !== "readadmin" &&

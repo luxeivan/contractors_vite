@@ -1,5 +1,5 @@
 // import { cookies } from 'next/headers'
-import React from 'react'
+import React, { useEffect } from 'react'
 import Title from 'antd/es/typography/Title'
 // import axios from 'axios'
 import { Tabs } from 'antd'
@@ -7,13 +7,15 @@ import TableContract from '../components/admin/TableContract'
 import TableContractor from '../components/admin/TableContractor'
 import Container from '../components/Container'
 import useAuth from '../store/authStore'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 // const server = process.env.SERVER_API
 export default function Admin() {
-  // const user = useAuth(store => store.user)
-  // if(!user){
-  //   return <Navigate to={'/login'}/>
-  // }
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!localStorage.getItem('jwt')) {
+      navigate('/login')
+    }
+  }, [])
   const items = [
     {
       key: '1',

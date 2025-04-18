@@ -3,13 +3,13 @@ import dayjs from 'dayjs'
 import { server } from "../config";
 import { strapi } from '@strapi/client';
 
-function getJwt() {
+async function getJwt() {
     return localStorage.getItem('jwt')
 }
 
 const client = strapi({
     baseURL: `${server}/api`,
-    auth: getJwt() || undefined
+    auth: localStorage.getItem('jwt') 
 });
 
 // Запрос одного договора для пользователя--------------------------------------------------------------------------
