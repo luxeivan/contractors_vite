@@ -29,11 +29,11 @@ export default function Admin() {
             <Flex gap={20}>
               <a onClick={() => { fetchMyContractor() }}><ReloadOutlined /></a>
               <Flex gap={10}>
-                <Text>Только в работе:</Text>
+                <Text>В работе:</Text>
                 <Switch onChange={() => { setOnlyAtWork(!onlyAtWork) }} />
               </Flex>
               <Flex gap={10}>
-                <Text>Только социальные объекты:</Text>
+                <Text>Социальные объекты:</Text>
                 <Switch onChange={() => { setOnlySocial(!onlySocial) }} />
               </Flex>
             </Flex>

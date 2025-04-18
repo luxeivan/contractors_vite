@@ -47,7 +47,7 @@ export default function TableContract() {
         value: item.id, label: item.name
       }))
       temp.unshift({
-        value: null, label: "Всех"
+        value: null, label: "Все"
       })
       setListContractors(temp)
     } catch (error) {
@@ -92,7 +92,7 @@ export default function TableContract() {
       render: bool => bool ? <Tag color={"blue"}>Социальный</Tag> : false,
     },
     {
-      title: 'Кол-во выполненых этапов',
+      title: 'Количество выполненых этапов',
       dataIndex: 'stepsComplited',
       key: 'stepsComplited',
       render: text => <span>{text}</span>,
@@ -188,17 +188,17 @@ export default function TableContract() {
         <Flex gap={20} align='center'>
           <a onClick={handlerReload}><ReloadOutlined /></a>
           <Flex gap={10}>
-            <Text>Только в работе:</Text>
+            <Text>В работе:</Text>
             <Switch onChange={() => { setOnlyAtWork(!onlyAtWork) }} />
           </Flex>
           <Flex gap={10}>
-            <Text>Только социальные объекты:</Text>
+            <Text>Социальные объекты:</Text>
             <Switch onChange={() => { setOnlySocial(!onlySocial) }} />
           </Flex>
           <Flex gap={10} align='center'>
-            <Text>Только от:</Text>
+            <Text>Подрядчик:</Text>
             <Select
-              defaultValue="Всех"
+              defaultValue="Все"
               style={{ width: 300 }}
               onChange={(value) => {
                 setSelectedContractor(value)
