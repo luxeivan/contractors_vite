@@ -10,7 +10,7 @@ const { Text } = Typography
 //     return matches ? decodeURIComponent(matches[1]) : undefined;
 // }
 
-export default function ButtonAddStep({ idContract, countSteps, updateContract }) {
+export default function ButtonAddStep({ idContract, countSteps, updateContract,contractCompleted }) {
     const [form] = Form.useForm();
     const jwt = localStorage.getItem('jwt')
     // console.log(countSteps);
@@ -107,7 +107,7 @@ export default function ButtonAddStep({ idContract, countSteps, updateContract }
     return (
         <>
         {contextHolder}
-            <Button type='primary' onClick={showModal}>Добавить выполненный этап</Button>
+            <Button type='primary' onClick={showModal} disabled={contractCompleted}>{contractCompleted?'В архивный договор нельзя добавить этап':'Добавить выполненный этап'}</Button>
             <Modal title="Добавить выполненный этап" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} footer={false}>
                 <Form
                     form={form}

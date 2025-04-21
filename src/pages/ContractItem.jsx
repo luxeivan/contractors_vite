@@ -55,7 +55,7 @@ export default function Contract({ params }) {
           <Flex gap={20} vertical>
             <Flex justify={contract.document?.url ? 'space-between' : 'end'} align='center'>
               {contract.document?.url && <Link target='_blank' to={`${server}${contract.document.url}`}><span style={{ color: "blue" }}>Посмотреть договор</span></Link>}
-              <ButtonAddStep idContract={idContract} countSteps={countSteps} updateContract={updateContract} />
+              <ButtonAddStep idContract={idContract} countSteps={countSteps} updateContract={updateContract} contractCompleted={contract.completed}/>
             </Flex>
             <Collapse items={items} defaultActiveKey={[items.length]} />
           </Flex>
