@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Form, Input, Button, Alert, Flex, Typography } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '../../store/authStore'
+import styles from './formAuth.module.css'
 export default function FormAuth() {
     const [errorAuth, setErrorAuth] = useState(false)
     const [auth, setAuth] = useState(false)
@@ -53,7 +54,8 @@ export default function FormAuth() {
                 name="auth"
                 labelCol={{ span:  6}}
                 wrapperCol={{ span: 18 }}
-                style={{ maxWidth: 1000, width: "30%", minWidth: 300 }}
+                // style={{ maxWidth: 1000, width: "30%", minWidth: 300 }}
+                className={styles.form}
                 initialValues={{ remember: true }}
                 onFinish={onFinish}
                 onFinishFailed={onFinishFailed}
