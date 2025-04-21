@@ -1,27 +1,53 @@
-import { addNewContract, getAllContractors } from '../../lib/getData';
+import { addNewContract, checkContract, getAllContractors } from '../../lib/getData';
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, ConfigProvider, DatePicker, Form, Input, Select, Switch, Upload } from 'antd'
+import { Button, ConfigProvider, DatePicker, Form, Input, Select, Switch, Upload, Typography } from 'antd'
 import React, { useEffect, useState } from 'react'
 import locale from "antd/es/locale/ru_RU";
+import { debounce } from 'lodash';
+import dayjs from 'dayjs';
+const { Text } = Typography
 
-export default function ModalAddContract({ isOpenModalAddContract, closeModalAddContract, update}) {
-  
+
+
+export default function ModalAddContract({ isOpenModalAddContract, closeModalAddContract, update }) {
+
   const [contractors, setContractors] = useState([]);
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [number, setNumber] = useState(false);
+  const [dateContract, setDateContract] = useState(false);
+  const [isCheckContract, setIsCheckContract] = useState(false);
+
   const [form] = Form.useForm();
   const fetchContractors = async () => {
     const allContractors = await getAllContractors(100, 1)
-    console.log("allContractors", allContractors)
+    // console.log("allContractors", allContractors)
     setContractors(allContractors.data.map(item => ({
       value: item.id,
       label: item.name,
     })))
 
   }
+
+  const fetchCheckContract = debounce((number, dateContract) => {
+    checkContract(number, dateContract)
+      .then((res) => {
+        // console.log(res)
+        setIsCheckContract(res)
+      })
+      .catch((error) => {
+        log("error", error)
+      })
+  }, 1000)
   useEffect(() => {
     fetchContractors()
   }, [])
+
+  useEffect(() => {
+    fetchCheckContract(number, dateContract)
+  }, [number, dateContract])
+
+
   async function handleUpload(values) {
     // console.log("values", values)
     const formData = new FormData();
@@ -92,14 +118,24 @@ export default function ModalAddContract({ isOpenModalAddContract, closeModalAdd
           label="Номер договора"
           required
         >
-          <Input />
+          <Input
+            onChange={(e) => {
+              setNumber(e.target.value)
+            }}
+          />
         </Form.Item>
         <Form.Item
           name='dateContract'
           label="Дата договора"
           required
         >
-          <DatePicker />
+          <DatePicker
+            format={"DD.MM.YYYY"}
+            onChange={(e) => {
+              console.log(e);
+              setDateContract(dayjs(e).format('YYYY-MM-DD'))
+            }}
+          />
         </Form.Item>
         <Form.Item
           name='description'
@@ -120,15 +156,21 @@ export default function ModalAddContract({ isOpenModalAddContract, closeModalAdd
         >
           <Button icon={<UploadOutlined />}>Выбрать документ</Button>
         </Upload>
-        <Button
-          type="primary"
-          htmlType='submit'
-          disabled={fileList.length === 0}
-          loading={uploading}
-          style={{ marginTop: 16 }}
-        >
-          {uploading ? 'Добавляется...' : 'Добавить договор'}
-        </Button>
+        <Form.Item label={null}>
+
+          <Button
+            type="primary"
+            htmlType='submit'
+            disabled={fileList.length === 0 || isCheckContract}
+            loading={uploading}
+            style={{ marginTop: 16 }}
+          >
+            {uploading ? 'Добавляется...' : 'Добавить договор'}
+          </Button>
+        </Form.Item>
+        {isCheckContract &&
+          <Text style={{ color: "red" }}>Договор с таким номером и датой уже существует</Text>
+        }
       </Form>
     </ConfigProvider>
   )

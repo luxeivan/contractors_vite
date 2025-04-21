@@ -1,14 +1,36 @@
-import { addNewContractor } from '../../lib/getData'
+import { addNewContractor, checkContractor } from '../../lib/getData'
 import { Button, Flex, Form, Input, } from 'antd'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { passwordStrength } from 'check-password-strength'
 import Text from 'antd/es/typography/Text'
+import debounce from "lodash/debounce";
 
 export default function ModalAddContractor({ isOpenModalAddContract, closeModalAddContract, update }) {
   const navigate = useNavigate()
   const [formAddContractor] = Form.useForm()
   const [uploading, setUploading] = useState(false);
+  const [inn, setInn] = useState(false);
+  const [kpp, setKpp] = useState(false);
+  const [isCheckContractor, setIsCheckContractor] = useState(false);
+
+  const fetchCheckContractor = debounce((inn, kpp) => {
+    checkContractor(inn, kpp)
+      .then((res) => {
+        // console.log(res)
+        setIsCheckContractor(res)
+      })
+      .catch((error) => {
+        log("error", error)
+      })
+  }, 1000)
+  useEffect(() => {
+    if (inn.length === 10 && kpp.length === 9){
+      fetchCheckContractor(inn, kpp)
+    }
+  }, [inn, kpp])
+ 
+
   const onFinish = async values => {
     setUploading(true)
     const newContractor = await addNewContractor(values)
@@ -43,7 +65,6 @@ export default function ModalAddContractor({ isOpenModalAddContract, closeModalA
         label="ИНН"
         name="inn"
         rules={[{ required: true, message: 'Пожалуйста введите ИНН.' }]}
-
       >
         <Input
           maxLength={10}
@@ -51,6 +72,7 @@ export default function ModalAddContractor({ isOpenModalAddContract, closeModalA
           onChange={(e) => {
             let value = e.target.value.replace(/[^0-9]/g, "");
             e.target.value = value;
+            setInn(value)
             formAddContractor.setFieldValue("inn", value);
           }}
         />
@@ -58,7 +80,9 @@ export default function ModalAddContractor({ isOpenModalAddContract, closeModalA
       <Form.Item
         label="КПП"
         name="kpp"
-        rules={[{ required: true, message: 'Пожалуйста введите КПП.' }]}
+        rules={[
+          { required: true, message: 'Пожалуйста введите КПП.' },
+        ]}
       >
         <Input
           maxLength={9}
@@ -66,13 +90,13 @@ export default function ModalAddContractor({ isOpenModalAddContract, closeModalA
           onChange={(e) => {
             let value = e.target.value.replace(/[^0-9]/g, "");
             e.target.value = value;
+            setKpp(value)
             formAddContractor.setFieldValue("kpp", value);
           }}
         />
       </Form.Item>
       <Flex justify='end'>
-
-<Text style={{color:"#999",fontSize:10}}>Пароль должен быть не менее 10 символов иметь заглавную букву и спецсимвол</Text>
+        <Text style={{ color: "#999", fontSize: 10 }}>Пароль должен быть не менее 10 символов иметь заглавную букву и спецсимвол</Text>
       </Flex>
       <Form.Item
         label="Пароль"
@@ -82,7 +106,7 @@ export default function ModalAddContractor({ isOpenModalAddContract, closeModalA
           ({ getFieldValue }) => ({
             validator(_, value) {
 
-              if (passwordStrength(value).value==='Medium' || passwordStrength(value).value==='Strong') {
+              if (passwordStrength(value).value === 'Medium' || passwordStrength(value).value === 'Strong') {
                 return Promise.resolve();
               }
               return Promise.reject(new Error('Пароль слишком слабый'));
@@ -117,10 +141,14 @@ export default function ModalAddContractor({ isOpenModalAddContract, closeModalA
 
 
       <Form.Item label={null}>
-        <Button type="primary" htmlType="submit">
+
+        <Button type="primary" htmlType="submit" disabled={isCheckContractor}>
           {uploading ? 'Добавляется...' : 'Добавить подрядчика'}
         </Button>
       </Form.Item>
+      {isCheckContractor &&
+        <Text style={{ color: "red" }}>Подрядчик с таким ИНН-КПП уже существует</Text>
+      }
     </Form>
   )
 }

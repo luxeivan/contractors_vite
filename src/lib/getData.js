@@ -237,6 +237,7 @@ export async function addNewContract(formData, data) {
     }
 }
 
+// Обрновить пароль у пользователя подрядчика
 export async function updatePassword(userId, newPassword) {
     try {
         // console.log("userId", userId);
@@ -261,6 +262,8 @@ export async function updatePassword(userId, newPassword) {
         return false
     }
 }
+
+// Завершить договор
 export async function completedContract(documentId) {
     try {
 
@@ -283,5 +286,48 @@ export async function completedContract(documentId) {
     } catch (error) {
         console.log("error changePassword :", error);
         return false
+    }
+}
+
+// Проверка на существование подрядчика по ИНН и КПП
+export async function checkContractor(inn, kpp) {
+    try {
+        const res = await axios.get(server + `/api/contractors?filters[inn][$eq]=${inn}&filters[kpp][$eq]=${kpp}`, {
+            headers: {
+                Authorization: `Bearer ${await getJwt()}`
+            }
+        })
+        if (res.data) {
+            if (res.data.data.length > 0) {
+                return true
+            } else {
+                return false
+            }
+        }
+        // console.log("checkContractor:", res.data);
+    } catch (error) {
+        console.log("error checkContractor:", error);
+
+    }
+}
+// Проверка на существование договора по номеру и дате
+export async function checkContract(number, date) {
+    try {
+        const res = await axios.get(server + `/api/contracts?filters[number][$eq]=${number}&filters[dateContract][$eq]=${date}`, {
+            headers: {
+                Authorization: `Bearer ${await getJwt()}`
+            }
+        })
+        if (res.data) {
+            if (res.data.data.length > 0) {
+                return true
+            } else {
+                return false
+            }
+        }
+        // console.log("checkContractor:", res.data);
+    } catch (error) {
+        console.log("error checkContract:", error);
+
     }
 }
