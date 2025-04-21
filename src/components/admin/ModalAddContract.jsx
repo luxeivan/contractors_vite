@@ -14,6 +14,7 @@ export default function ModalAddContract({ isOpenModalAddContract, closeModalAdd
   const [contractors, setContractors] = useState([]);
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [idContractor, setIdContractor] = useState(false);
   const [number, setNumber] = useState(false);
   const [dateContract, setDateContract] = useState(false);
   const [isCheckContract, setIsCheckContract] = useState(false);
@@ -29,8 +30,8 @@ export default function ModalAddContract({ isOpenModalAddContract, closeModalAdd
 
   }
 
-  const fetchCheckContract = debounce((number, dateContract) => {
-    checkContract(number, dateContract)
+  const fetchCheckContract = debounce((idContractor,number, dateContract) => {
+    checkContract(idContractor,number, dateContract)
       .then((res) => {
         // console.log(res)
         setIsCheckContract(res)
@@ -44,8 +45,8 @@ export default function ModalAddContract({ isOpenModalAddContract, closeModalAdd
   }, [])
 
   useEffect(() => {
-    fetchCheckContract(number, dateContract)
-  }, [number, dateContract])
+    fetchCheckContract(idContractor,number, dateContract)
+  }, [idContractor,number, dateContract])
 
 
   async function handleUpload(values) {
@@ -108,7 +109,10 @@ export default function ModalAddContract({ isOpenModalAddContract, closeModalAdd
             showSearch
             placeholder="Выберите подрядчика"
             optionFilterProp="label"
-            // onChange={onChange}
+            onChange={(event) => {
+              console.log(event);
+              setIdContractor(event)
+            }}
             // onSearch={onSearch}
             options={contractors}
           />

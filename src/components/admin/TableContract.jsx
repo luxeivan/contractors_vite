@@ -6,6 +6,7 @@ import ModalViewContract from './ModalViewContract';
 import ModalAddContract from './ModalAddContract';
 import { ReloadOutlined } from '@ant-design/icons';
 import useAuth from '../../store/authStore'
+import dayjs from 'dayjs';
 const defaultPageSize = 10
 const defaultPage = 1
 
@@ -78,7 +79,7 @@ export default function TableContract() {
       title: 'Дата договора',
       dataIndex: 'dateContract',
       key: 'dateContract',
-      render: text => <span>{text}</span>,
+      render: text => <span>{dayjs(text).format('DD.MM.YYYY')}</span>,
     },
     {
       title: 'Предмет договора',

@@ -311,9 +311,9 @@ export async function checkContractor(inn, kpp) {
     }
 }
 // Проверка на существование договора по номеру и дате
-export async function checkContract(number, date) {
+export async function checkContract(idContractor, number, date) {
     try {
-        const res = await axios.get(server + `/api/contracts?filters[number][$eq]=${number}&filters[dateContract][$eq]=${date}`, {
+        const res = await axios.get(server + `/api/contracts?filters[number][$eq]=${number}&filters[dateContract][$eq]=${date}&filters[contractor][id][$eq]=${idContractor}`, {
             headers: {
                 Authorization: `Bearer ${await getJwt()}`
             }
