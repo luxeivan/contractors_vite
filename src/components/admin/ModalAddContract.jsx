@@ -1,16 +1,31 @@
-import { addNewContract, checkContract, getAllContractors } from '../../lib/getData';
-import { UploadOutlined } from '@ant-design/icons';
-import { Button, ConfigProvider, DatePicker, Form, Input, Select, Switch, Upload, Typography } from 'antd'
-import React, { useEffect, useState } from 'react'
+import {
+  addNewContract,
+  checkContract,
+  getAllContractors,
+} from "../../lib/getData";
+import { UploadOutlined } from "@ant-design/icons";
+import {
+  Button,
+  ConfigProvider,
+  DatePicker,
+  Form,
+  Input,
+  Select,
+  Switch,
+  Upload,
+  Typography,
+} from "antd";
+import React, { useEffect, useState } from "react";
 import locale from "antd/es/locale/ru_RU";
-import { debounce } from 'lodash';
-import dayjs from 'dayjs';
-const { Text } = Typography
+import { debounce } from "lodash";
+import dayjs from "dayjs";
+const { Text } = Typography;
 
-
-
-export default function ModalAddContract({ isOpenModalAddContract, closeModalAddContract, update }) {
-
+export default function ModalAddContract({
+  isOpenModalAddContract,
+  closeModalAddContract,
+  update,
+}) {
   const [contractors, setContractors] = useState([]);
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -21,63 +36,62 @@ export default function ModalAddContract({ isOpenModalAddContract, closeModalAdd
 
   const [form] = Form.useForm();
   const fetchContractors = async () => {
-    const allContractors = await getAllContractors(100, 1)
+    const allContractors = await getAllContractors(100, 1);
     // console.log("allContractors", allContractors)
-    setContractors(allContractors.data.map(item => ({
-      value: item.id,
-      label: item.name,
-    })))
+    setContractors(
+      allContractors.data.map((item) => ({
+        value: item.id,
+        label: item.name,
+      }))
+    );
+  };
 
-  }
-
-  const fetchCheckContract = debounce((idContractor,number, dateContract) => {
-    checkContract(idContractor,number, dateContract)
+  const fetchCheckContract = debounce((idContractor, number, dateContract) => {
+    checkContract(idContractor, number, dateContract)
       .then((res) => {
-        // console.log(res)
-        setIsCheckContract(res)
+        console.log(res)
+        setIsCheckContract(res);
       })
       .catch((error) => {
-        log("error", error)
-      })
-  }, 1000)
+        console.log("error", error);
+      });
+  }, 1000);
   useEffect(() => {
-    fetchContractors()
-  }, [])
+    fetchContractors();
+  }, []);
 
   useEffect(() => {
-    fetchCheckContract(idContractor,number, dateContract)
-  }, [idContractor,number, dateContract])
-
+    fetchCheckContract(idContractor, number, dateContract);
+  }, [idContractor, number, dateContract]);
 
   async function handleUpload(values) {
     // console.log("values", values)
     const formData = new FormData();
-    fileList.forEach(file => {
-      formData.append('files', file);
+    fileList.forEach((file) => {
+      formData.append("files", file);
     });
     setUploading(true);
     try {
-      const newContractor = await addNewContract(formData, values)
+      const newContractor = await addNewContract(formData, values);
       if (newContractor) {
         // console.log("newStep", newStep);
         setFileList([]);
         closeModalAddContract(false);
-        form.resetFields()
-        update()
+        form.resetFields();
+        update();
       } else {
-        throw new Error('Ошибка добавления договора')
+        throw new Error("Ошибка добавления договора");
       }
 
       // message.success('upload successfully.');
     } catch (error) {
-      console.log('Ошибка добавления договора: ', error);
+      console.log("Ошибка добавления договора: ", error);
     }
 
     setUploading(false);
-
-  };
+  }
   const props = {
-    onRemove: file => {
+    onRemove: (file) => {
       const index = fileList.indexOf(file);
       const newFileList = fileList.slice();
       newFileList.splice(index, 1);
@@ -85,97 +99,76 @@ export default function ModalAddContract({ isOpenModalAddContract, closeModalAdd
     },
     beforeUpload: (file) => {
       // console.log("file", file);
-      setFileList(prev => ([...prev, file]));
+      setFileList((prev) => [...prev, file]);
       return false;
     },
     fileList,
   };
   return (
     <ConfigProvider locale={locale}>
-
       <Form
         form={form}
         onFinish={handleUpload}
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 16 }}
-        style={{ maxWidth: 600 }}>
-        <Form.Item
-          name='contractor'
-          label="Подрядчик"
-          required
-        >
-
+        style={{ maxWidth: 600 }}
+      >
+        <Form.Item name="contractor" label="Подрядчик" required>
           <Select
             showSearch
             placeholder="Выберите подрядчика"
             optionFilterProp="label"
             onChange={(event) => {
               console.log(event);
-              setIdContractor(event)
+              setIdContractor(event);
             }}
             // onSearch={onSearch}
             options={contractors}
           />
         </Form.Item>
-        <Form.Item
-          name='number'
-          label="Номер договора"
-          required
-        >
+        <Form.Item name="number" label="Номер договора" required>
           <Input
             onChange={(e) => {
-              setNumber(e.target.value)
+              setNumber(e.target.value);
             }}
           />
         </Form.Item>
-        <Form.Item
-          name='dateContract'
-          label="Дата договора"
-          required
-        >
+        <Form.Item name="dateContract" label="Дата договора" required>
           <DatePicker
             format={"DD.MM.YYYY"}
             onChange={(e) => {
               console.log(e);
-              setDateContract(dayjs(e).format('YYYY-MM-DD'))
+              setDateContract(dayjs(e).format("YYYY-MM-DD"));
             }}
           />
         </Form.Item>
-        <Form.Item
-          name='description'
-          label="Предмет договора"
-        >
+        <Form.Item name="description" label="Предмет договора">
           <Input.TextArea />
         </Form.Item>
-        <Form.Item
-          name='social'
-          label="Социальный объект"
-        >
+        <Form.Item name="social" label="Социальный объект">
           <Switch />
         </Form.Item>
 
-        <Upload
-          {...props}
-          accept=".jpg,.jpeg,.png,.pdf"
-        >
+        <Upload {...props} accept=".jpg,.jpeg,.png,.pdf">
           <Button icon={<UploadOutlined />}>Выбрать документ</Button>
         </Upload>
         <Form.Item label={null}>
-
           <Button
             type="primary"
-            htmlType='submit'
+            htmlType="submit"
             disabled={fileList.length === 0 || isCheckContract}
             loading={uploading}
             style={{ marginTop: 16 }}
           >
-            {uploading ? 'Добавляется...' : 'Добавить договор'}
+            {uploading ? "Добавляется..." : "Добавить договор"}
           </Button>
         </Form.Item>
-        {isCheckContract &&
-          <Text style={{ color: "red" }}>Договор с таким номером и датой уже существует</Text>
-        }
+        {isCheckContract && (
+          <Text style={{ color: "red" }}>
+            Договор с таким номером и датой уже существует
+          </Text>
+        )}
       </Form>
     </ConfigProvider>
-  )
+  );
 }

@@ -17,17 +17,17 @@ export default function ModalAddContractor({ isOpenModalAddContract, closeModalA
   const fetchCheckContractor = debounce((inn, kpp) => {
     checkContractor(inn, kpp)
       .then((res) => {
-        // console.log(res)
+        console.log(res)
         setIsCheckContractor(res)
       })
       .catch((error) => {
-        log("error", error)
+        console.log("error", error)
       })
   }, 1000)
   useEffect(() => {
-    if (inn.length === 10 && kpp.length === 9){
+    // if (inn.length === 10 && kpp.length === 9){
       fetchCheckContractor(inn, kpp)
-    }
+    // }
   }, [inn, kpp])
  
 
