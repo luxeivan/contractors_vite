@@ -16,12 +16,24 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { user, getUser } = useAuth(store => store)
-  useEffect(() => {
+  const { user, role, getUser } = useAuth(store => store)
+
+  const checkRole = async () => {
     if (location.pathname !== '/login' && !localStorage.getItem('jwt')) {
-      navigate('/login')
+      return navigate('/login')
     }
-    getUser()
+    const user = await getUser()
+    console.log(user);
+
+    if (location.pathname === '/dashboard' && (user?.role?.type === 'admin' || user?.role?.type === 'readadmin')) {
+      return navigate('/admin')
+    } else if (location.pathname === '/admin' && user?.role?.type === 'user') {
+      return navigate('/dashboard')
+    }
+  }
+
+  useEffect(() => {
+    checkRole()
   }, [])
   return (
     <Container>
@@ -36,7 +48,7 @@ export default function Header() {
                 <Text style={{ fontSize: 20 }}>{user.username}</Text>
               </p>
               <Link target='_blank' to={`${server}/uploads/Rukovodstvo_polzovatelya_servisa_fotootchety_v1_dbc578d635.pdf`}>
-                <QuestionCircleOutlined style={{fontSize:20}}/>
+                <QuestionCircleOutlined style={{ fontSize: 20 }} />
               </Link>
               <ButtonLogout />
             </Flex>
