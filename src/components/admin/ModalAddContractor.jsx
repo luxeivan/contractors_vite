@@ -1,11 +1,10 @@
 import { addNewContractor, checkContractor } from "../../lib/getData";
 import { Button, Flex, Form, Input } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { passwordStrength } from "check-password-strength";
 import Text from "antd/es/typography/Text";
 import debounce from "lodash/debounce";
-
 
 function generatePassword(length = 12) {
   const specials = "!@#$%^&*()_+-=[]{}|;:,./<>?";
@@ -42,17 +41,40 @@ export default function ModalAddContractor({
   const [kpp, setKpp] = useState("");
   const [isCheckContractor, setIsCheckContractor] = useState(false);
 
-  const fetchCheckContractor = debounce((innValue, kppValue) => {
-    checkContractor(innValue, kppValue)
-      .then(setIsCheckContractor)
-      .catch(console.error);
-  }, 1000);
+  const fetchCheckContractor = useMemo(
+    () =>
+      debounce((innValue, kppValue) => {
+        checkContractor(innValue, kppValue)
+          .then((res) => {
+            console.log(res);
+            setIsCheckContractor(res);
+          })
+          .catch((error) => console.log("error", error));
+      }, 1000),
+    []
+  );
 
+  // 3. Обновляем useEffect
   useEffect(() => {
-    if (inn && kpp) {
-      fetchCheckContractor(inn, kpp);
-    }
-  }, [inn, kpp]);
+    fetchCheckContractor(inn, kpp);
+    return () => fetchCheckContractor.cancel(); // убираем таймер при размонтировании
+  }, [inn, kpp, fetchCheckContractor]);
+
+  // const fetchCheckContractor = debounce((inn, kpp) => {
+  //   checkContractor(inn, kpp)
+  //     .then((res) => {
+  //       console.log(res)
+  //       setIsCheckContractor(res)
+  //     })
+  //     .catch((error) => {
+  //       console.log("error", error)
+  //     })
+  // }, 1000)
+  // useEffect(() => {
+  //   // if (inn.length === 10 && kpp.length === 9){
+  //     fetchCheckContractor(inn, kpp)
+  //   // }
+  // }, [inn, kpp])
 
   const handleGeneratePassword = () => {
     const newPassword = generatePassword(12);
@@ -156,9 +178,11 @@ export default function ModalAddContractor({
               }),
             ]}
           >
-            <Input.Password style={{ width: "calc(100% - 130px)" }} />
+            <Input.Password style={{ width: "calc(100% - 120px)" }} />
           </Form.Item>
-          <Button onClick={handleGeneratePassword}>Сгенерировать</Button>
+          <Button style={{ width: 120 }} onClick={handleGeneratePassword}>
+            Сгенерировать
+          </Button>
         </Input.Group>
       </Form.Item>
 
