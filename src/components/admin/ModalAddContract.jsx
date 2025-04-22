@@ -15,7 +15,7 @@ import {
   Upload,
   Typography,
 } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import locale from "antd/es/locale/ru_RU";
 import { debounce } from "lodash";
 import dayjs from "dayjs";
@@ -46,16 +46,20 @@ export default function ModalAddContract({
     );
   };
 
-  const fetchCheckContract = debounce((idContractor, number, dateContract) => {
-    checkContract(idContractor, number, dateContract)
-      .then((res) => {
-        console.log(res)
-        setIsCheckContract(res);
-      })
-      .catch((error) => {
-        console.log("error", error);
-      });
-  }, 1000);
+  const fetchCheckContract = useMemo(
+    () =>
+      debounce((idContractor, number, dateContract) => {
+        checkContract(idContractor, number, dateContract)
+          .then((res) => {
+            console.log("Тестируем",res);
+            setIsCheckContract(res);
+          })
+          .catch((error) => {
+            console.log("error", error);
+          });
+      }, 1000),
+    []
+  );
   useEffect(() => {
     fetchContractors();
   }, []);

@@ -46,7 +46,7 @@ export default function ModalAddContractor({
       debounce((innValue, kppValue) => {
         checkContractor(innValue, kppValue)
           .then((res) => {
-            console.log(res);
+            console.log("Тестируем", res);
             setIsCheckContractor(res);
           })
           .catch((error) => console.log("error", error));
