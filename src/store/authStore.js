@@ -5,7 +5,7 @@ import { server } from "../config";
 
 const useAuth = create((set, get) => ({
   user: null,
-  role:null,
+  role: null,
   changeUserAndRole: (user, role) => {
     set({ user, role })
   },
@@ -13,7 +13,7 @@ const useAuth = create((set, get) => ({
     set({ user: null, role: null })
   },
   getUser: async () => {
-    if(localStorage.getItem('jwt')){
+    if (localStorage.getItem('jwt')) {
       try {
         const res = await axios.get(server + `/api/users/me?populate[0]=role`, {
           headers: {
@@ -21,14 +21,16 @@ const useAuth = create((set, get) => ({
           }
         })
         if (res.data) {
-          set({ user: res.data, role: res.data })
+          // console.log(res.data);
+          
+          await set({ user: res.data, role: res.data.role })
           return res.data
         }
       } catch (error) {
         console.log("error getUser:", error);
         return false
       }
-    }else{
+    } else {
       return false
     }
   },
@@ -40,7 +42,7 @@ const useAuth = create((set, get) => ({
           password: password,
         })
       if (response.data.jwt) {
-        localStorage.setItem('jwt',response.data.jwt)
+        localStorage.setItem('jwt', response.data.jwt)
         return response.data
       } else {
         return false
