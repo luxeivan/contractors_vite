@@ -46,23 +46,25 @@ export default function ModalAddContract({
     );
   };
 
-  const fetchCheckContract = useMemo(
-    () =>
-      debounce((idContractor, number, dateContract) => {
-        checkContract(idContractor, number, dateContract)
-          .then((res) => {
-            console.log("Тестируем",res);
-            setIsCheckContract(res);
-          })
-          .catch((error) => {
-            console.log("error", error);
-          });
-      }, 1000),
-    []
-  );
-  useEffect(() => {
-    fetchContractors();
-  }, []);
+const fetchCheckContract = useMemo(
+  () =>
+    debounce((idContractor, number, dateContract) => {
+      if (!idContractor || !number || !dateContract) return; // ранний выход
+      checkContract(idContractor, number, dateContract)
+        .then((res) => {
+          console.log("Тестируем", res);
+          setIsCheckContract(res);
+        })
+        .catch((error) => console.log("error", error));
+    }, 1000),
+  []
+);
+
+
+useEffect(() => {
+  fetchCheckContract(idContractor, number, dateContract);
+  return () => fetchCheckContract.cancel();
+}, [idContractor, number, dateContract, fetchCheckContract]);
 
   useEffect(() => {
     fetchCheckContract(idContractor, number, dateContract);

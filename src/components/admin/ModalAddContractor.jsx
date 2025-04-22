@@ -7,7 +7,7 @@ import Text from "antd/es/typography/Text";
 import debounce from "lodash/debounce";
 
 function generatePassword(length = 12) {
-  const specials = "!@#$%^&*()_+-=[]{}|;:,./<>?";
+  const specials = "!_-";
   const lowers = "abcdefghijklmnopqrstuvwxyz";
   const uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const digits = "0123456789";
