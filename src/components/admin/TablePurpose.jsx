@@ -44,16 +44,23 @@ export default function TablePurpose() {
     const { user } = useAuth(store => store)
     const { purposes, find, update, create } = usePurposes(store => store)
     const [isOpenEditModal, setIsOpenEditModal] = useState(false)
+    const [loadingPurposes, setLoadingPurposes] = useState(false)
     const [loading, setLoading] = useState(false)
     const [isOpenAddModal, setIsOpenAddModal] = useState(false)
     const [loadingAdd, setLoadingAdd] = useState(false)
 
+    const fetchPurposes = async () => {
+        setLoadingPurposes(true)
+        await find()
+        setLoadingPurposes(false)
+    }
+
     useEffect(() => {
-        find()
+        fetchPurposes()
     }, [])
 
     const handlerReload = (record) => {
-        find()
+        fetchPurposes()
     }
     const openModal = (record) => {
         form.setFieldValue('name', record.name)
@@ -122,7 +129,7 @@ export default function TablePurpose() {
                         <Button onClick={openModalAdd} type='primary'>Добавить новое назначение</Button>
                     }
                 </Flex>
-                <Table columns={columns} dataSource={data} />
+                <Table columns={columns} dataSource={data} loading={loadingPurposes}/>
 
             </Container>
             <Modal

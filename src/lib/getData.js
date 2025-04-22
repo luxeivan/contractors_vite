@@ -69,9 +69,10 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
         baseURL: `${server}/api`,
         auth: localStorage.getItem('jwt') || undefined
     })
+    console.log(filters);
+    
     try {
         const contracts = client.collection('contracts');
-
         const allContracts = await contracts.find({
             filters: {
                 contractor: filters.contractorId ? {
@@ -79,8 +80,8 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
                         $eq: filters.contractorId
                     }
                 } : undefined,
-                social: filters.social ? filters.social : undefined,
-                completed: filters.completed ? false : undefined,
+                // social: filters.social ? filters.social : undefined,
+                completed: filters.completed === 0 ? undefined : (filters.completed === 2 ? true : false),
                 purpose: filters.purposeId ? {
                     id: {
                         $eq: filters.purposeId

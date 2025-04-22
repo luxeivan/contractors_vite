@@ -19,8 +19,8 @@ export default function TableContract() {
   const [isOpenModal, setIsOpenModal] = useState(false)
   const [isOpenModalAddContract, setIsOpenModalAddContract] = useState(false)
   const [docIdForModal, setDocIdForModal] = useState(null)
-  const [onlyAtWork, setOnlyAtWork] = useState(false)
-  const [onlySocial, setOnlySocial] = useState(false)
+  const [onlyAtWork, setOnlyAtWork] = useState(0)
+  // const [onlySocial, setOnlySocial] = useState(false)
   const [listContractors, setListContractors] = useState(null)
   const [selectedContractor, setSelectedContractor] = useState(null)
   const [selectedPurpose, setSelectedPurpose] = useState(null)
@@ -29,7 +29,7 @@ export default function TableContract() {
   const fetching = async (defaultPageSize, defaultPage) => {
     try {
       setLoading(true)
-      const temp = await getAllContracts(defaultPageSize, defaultPage, { contractorId: selectedContractor, social: onlySocial, completed: onlyAtWork, purposeId: selectedPurpose })
+      const temp = await getAllContracts(defaultPageSize, defaultPage, { contractorId: selectedContractor, completed: onlyAtWork, purposeId: selectedPurpose })
       // console.log("temp", temp)
       setAllContracts(temp)
       setLoading(false)
@@ -84,7 +84,7 @@ export default function TableContract() {
     fetching(defaultPageSize, defaultPage)
     fetchingContractors(100, 1)
     fetchPurposes()
-  }, [selectedContractor, onlyAtWork, onlySocial, selectedPurpose])
+  }, [selectedContractor, onlyAtWork, selectedPurpose])
 
   // console.log("allContracts", allContracts);
   const columns = [
@@ -200,9 +200,28 @@ export default function TableContract() {
       <Flex justify='space-between' align='center' style={{ marginBottom: 20 }}>
         <Flex gap={20} align='center'>
 
-          <Flex gap={10}>
-            <Text>В работе:</Text>
-            <Switch onChange={() => { setOnlyAtWork(!onlyAtWork) }} />
+          <Flex gap={10} align='center'>
+            <Text>Статус:</Text>
+            <Select 
+            defaultValue={0}
+            options={[
+              {
+                value: 0,
+                label: "Все",
+
+              },
+              {
+                value: 1,
+                label: "В работе"
+              },
+              {
+                value: 2,
+                label: "Архивный"
+              }
+            ]}
+              style={{ width: 150 }}
+              onChange={(value) => { setOnlyAtWork(value) }}
+            />
           </Flex>
           <Flex gap={10} align='center'>
             <Text>Назначение:</Text>
@@ -227,6 +246,7 @@ export default function TableContract() {
                   setSelectedContractor(value)
                 }}
                 options={listContractors}
+                showSearch={true}
               />
             }
           </Flex>
