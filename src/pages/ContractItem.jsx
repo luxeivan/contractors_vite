@@ -90,7 +90,7 @@ export default function Contract({ params }) {
             >
               {contract.document?.url && (
                 <Link target="_blank" to={`${server}${contract.document.url}`}>
-                  <span style={{ color: "blue" }}>Посмотреть договор</span>
+                  <Text style={{ color: "blue" }}>Посмотреть договор</Text>
                 </Link>
               )}
               <ButtonAddStep
