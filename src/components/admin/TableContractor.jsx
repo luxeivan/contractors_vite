@@ -1,5 +1,5 @@
 import { getAllContractors } from '../../lib/getData';
-import { Table, Space, Pagination, Flex, Switch, Button, Modal } from 'antd';
+import { Table, Space, Pagination, Flex, Switch, Button, Modal, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { ReloadOutlined } from '@ant-design/icons';
 import ModalViewContractor from './ModalViewContractor';
@@ -115,11 +115,16 @@ export default function TableContractor() {
 
   return (
     <div>
-      <Flex justify='space-between' align='center' style={{ marginBottom: 20 }}>
-        <a onClick={handlerReload}><ReloadOutlined /></a>
-        {user.role.type !== "readadmin" &&
-          <Button onClick={handlerAddNewContract} type='primary'>Добавить нового подрядчика</Button>
-        }
+      <Flex justify='end' align='center' style={{ marginBottom: 20 }}>
+        <Flex gap={20} align='center'>
+
+          <Tooltip title="Обновить">
+            <a onClick={handlerReload}><ReloadOutlined /></a>
+          </Tooltip>
+          {user.role.type !== "readadmin" &&
+            <Button onClick={handlerAddNewContract} type='primary'>Добавить нового подрядчика</Button>
+          }
+        </Flex>
       </Flex>
       <Table
         columns={columns}
