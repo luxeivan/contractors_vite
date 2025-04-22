@@ -80,12 +80,17 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
                     }
                 } : undefined,
                 social: filters.social ? filters.social : undefined,
-                completed: filters.completed ? false : undefined
+                completed: filters.completed ? false : undefined,
+                purpose: filters.purposeId ? {
+                    id: {
+                        $eq: filters.purposeId
+                    }
+                } : undefined,
             },
             populate: {
                 steps: true,
                 contractor: true,
-
+                purpose: true
             },
             sort: {
                 dateContract: "desc"
@@ -95,20 +100,40 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
                 pageSize: pageSize,
             }
         });
-        // console.log("allContracts", allContracts.data);
-        // const res = await axios.get(server + `/api/contracts?pagination[pageSize]=${pageSize}&pagination[page]=${page}&populate[0]=contractor&populate[1]=steps&sort=dateContract:desc${contractorId ? '&filters[contractor][id][$eq]=' + contractorId : ''}`, {
-        //     headers: {
-
-        //         Authorization: `Bearer ${await getJwt()}`
-        //     }
-        // })
         if (allContracts.data) {
             return allContracts
         }
-        // console.log("contractors:", contractors);
     } catch (error) {
         console.log("error getAllContracts:", error);
+    }
+}
 
+
+
+// Запрос всех назначений--------------------------------------------------------------------------
+export async function getAllPurposes(pageSize = 100, page = 1, filters = {},) {
+    const client = strapi({
+        baseURL: `${server}/api`,
+        auth: localStorage.getItem('jwt') || undefined
+    })
+    try {
+        const purposes = client.collection('purposes');
+
+        const allPurposes = await purposes.find({
+
+            sort: {
+                name: "asc"
+            },
+            pagination: {
+                page: page,
+                pageSize: pageSize,
+            }
+        });
+        if (allPurposes.data) {
+            return allPurposes
+        }
+    } catch (error) {
+        console.log("error getAllPurposes:", error);
     }
 }
 

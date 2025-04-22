@@ -8,6 +8,7 @@ import TableContractor from '../components/admin/TableContractor'
 import Container from '../components/Container'
 import useAuth from '../store/authStore'
 import { Navigate, useNavigate } from 'react-router-dom'
+import TablePurpose from '../components/admin/TablePurpose'
 // const server = process.env.SERVER_API
 export default function Admin() {
   // const navigate = useNavigate();
@@ -26,6 +27,11 @@ export default function Admin() {
       key: '2',
       label: 'Подрядчики',
       children: <TableContractor />,
+    },
+    {
+      key: '3',
+      label: 'Назначения',
+      children: <TablePurpose />,
     }
   ];
   // const jwt = (await cookies()).get('jwt')?.value || null   
