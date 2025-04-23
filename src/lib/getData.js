@@ -12,7 +12,7 @@ function getJwt() {
 // Запрос одного договора для пользователя--------------------------------------------------------------------------
 export async function getContractItem(idContract) {
     try {
-        const res = await axios.get(server + `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos`, {
+        const res = await axios.get(server + `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose`, {
             headers: {
                 Authorization: `Bearer ${await getJwt()}`
             }
@@ -69,7 +69,7 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
         baseURL: `${server}/api`,
         auth: localStorage.getItem('jwt') || undefined
     })
-    console.log(filters);
+    // console.log(filters);
 
     try {
         const contracts = client.collection('contracts');

@@ -35,7 +35,7 @@ export default function TableContractor() {
     fetching(defaultPageSize, defaultPage)
   }, [])
 
-  console.log("allContractors", allContractors);
+  // console.log("allContractors", allContractors);
   const columns = [
     // {
     //   title: 'Подрядчик',
@@ -59,7 +59,7 @@ export default function TableContractor() {
       title: 'Создан',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: date => <span style={{color:"#666"}}>{dayjs(date).format('DD.MM.YYYY')}</span>,
+      render: date => <span style={{ color: "#666" }}>{dayjs(date).format('DD.MM.YYYY HH:mm')}</span>,
     },
     // {
     //   title: 'Социальный объект',
@@ -67,12 +67,15 @@ export default function TableContractor() {
     //   key: 'social',
     //   render: bool => <Switch disabled defaultValue={bool} />,
     // },
-    // {
-    //   title: 'Описание',
-    //   dataIndex: 'description',
-    //   key: 'description',
-    // },
     {
+      title: 'Комментарий',
+      dataIndex: 'comment',
+      key: 'comment',
+      render: text => <span>{text}</span>,
+    },
+  ];
+  if (user?.role?.type !== "readadmin") {
+    columns.push({
       title: 'Действия',
       key: 'action',
       render: (_, record) => (
@@ -80,14 +83,15 @@ export default function TableContractor() {
           <a onClick={() => { openModal(record.documentId) }}>Посмотреть</a>
         </Space>
       ),
-    },
-  ];
+    })
+  }
   const data = allContractors?.data?.map(item => ({
     key: item.id,
     documentId: item.documentId,
     name: item.name,
     description: item.description,
     createdAt: item.createdAt,
+    comment: item.comment,
     // contractor: item.contractor.name,
     // social: item.social,
     contractor_inn_kpp: `${item.inn}-${item.kpp}`
@@ -125,7 +129,6 @@ export default function TableContractor() {
     <div>
       <Flex justify='end' align='center' style={{ marginBottom: 20 }}>
         <Flex gap={20} align='center'>
-
           <Tooltip title="Обновить">
             <a onClick={handlerReload}><ReloadOutlined /></a>
           </Tooltip>

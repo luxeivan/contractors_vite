@@ -1,16 +1,17 @@
 // import { cookies } from 'next/headers'
 import React, { useEffect } from 'react'
-import Title from 'antd/es/typography/Title'
+// import Title from 'antd/es/typography/Title'
 // import axios from 'axios'
 import { Tabs } from 'antd'
 import TableContract from '../components/admin/TableContract'
 import TableContractor from '../components/admin/TableContractor'
 import Container from '../components/Container'
 import useAuth from '../store/authStore'
-import { Navigate, useNavigate } from 'react-router-dom'
+// import { Navigate, useNavigate } from 'react-router-dom'
 import TablePurpose from '../components/admin/TablePurpose'
 // const server = process.env.SERVER_API
 export default function Admin() {
+  const { user } = useAuth(store => store)
   // const navigate = useNavigate();
   // useEffect(() => {
   //   if (!localStorage.getItem('jwt')) {
@@ -28,12 +29,13 @@ export default function Admin() {
       label: 'Подрядчики',
       children: <TableContractor />,
     },
-    {
+    user?.role?.type !== "readadmin" && {
       key: '3',
       label: 'Назначения',
       children: <TablePurpose />,
     }
   ];
+
   // const jwt = (await cookies()).get('jwt')?.value || null   
   return (
     <Container>
