@@ -5,6 +5,7 @@ import { ReloadOutlined } from '@ant-design/icons';
 import ModalViewContractor from './ModalViewContractor';
 import ModalAddContractor from './ModalAddContractor';
 import useAuth from '../../store/authStore'
+import dayjs from 'dayjs';
 const defaultPageSize = 10
 const defaultPage = 1
 
@@ -34,7 +35,7 @@ export default function TableContractor() {
     fetching(defaultPageSize, defaultPage)
   }, [])
 
-  // console.log("allContractors", allContractors);
+  console.log("allContractors", allContractors);
   const columns = [
     // {
     //   title: 'Подрядчик',
@@ -53,6 +54,12 @@ export default function TableContractor() {
       dataIndex: 'contractor_inn_kpp',
       key: 'contractor_inn_kpp',
       render: text => <span>{text}</span>,
+    },
+    {
+      title: 'Создан',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: date => <span style={{color:"#666"}}>{dayjs(date).format('DD.MM.YYYY')}</span>,
     },
     // {
     //   title: 'Социальный объект',
@@ -80,6 +87,7 @@ export default function TableContractor() {
     documentId: item.documentId,
     name: item.name,
     description: item.description,
+    createdAt: item.createdAt,
     // contractor: item.contractor.name,
     // social: item.social,
     contractor_inn_kpp: `${item.inn}-${item.kpp}`

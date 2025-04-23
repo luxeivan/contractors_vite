@@ -22,11 +22,12 @@ import dayjs from "dayjs";
 const { Text } = Typography;
 
 export default function ModalAddContract({
-  isOpenModalAddContract,
+  // isOpenModalAddContract,
   closeModalAddContract,
   update,
 }) {
   const [contractors, setContractors] = useState([]);
+  const [purpose, setPurpose] = useState([]);
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [idContractor, setIdContractor] = useState(false);
@@ -59,11 +60,10 @@ export default function ModalAddContract({
       }, 1000),
     []
   );
-
-
   useEffect(() => {
-    fetchContractors();
-  }, []);
+    fetchContractors()
+  }, [])
+
 
   useEffect(() => {
     fetchCheckContract(idContractor, number, dateContract);
@@ -155,8 +155,14 @@ export default function ModalAddContract({
         <Form.Item name="description" label="Предмет договора">
           <Input.TextArea />
         </Form.Item>
-        <Form.Item name="social" label="Социальный объект">
-          <Switch />
+        <Form.Item name="numberTask" label="Номер Тех.Задания">
+          <Input />
+        </Form.Item>
+        <Form.Item name="comment" label="Комментарий">
+          <Input.TextArea />
+        </Form.Item>
+        <Form.Item name="social" label="Назначение">
+          <Select options={options} />
         </Form.Item>
 
         <Upload {...props} accept=".jpg,.jpeg,.png,.pdf">

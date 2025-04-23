@@ -247,6 +247,7 @@ export default function TableContract() {
                 }}
                 options={listContractors}
                 showSearch={true}
+                optionFilterProp="label"
               />
             }
           </Flex>
