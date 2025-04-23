@@ -83,7 +83,7 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
         }
     }
     // console.log("contract",contract);
-    
+
     return (
         <Modal
             open={isOpenModal}
@@ -106,23 +106,27 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
                     <Descriptions items={propertiesContract} column={1} />
                     {contract.steps.length === 0 ? <Title level={4} style={{ color: "#f00" }}>Этапов не добавлено</Title> : <ViewSteps steps={contract.steps} />}
                     {user?.role?.type !== "readadmin" && !contract.completed &&
-                        <Popconfirm
-                            title="Добавить в архив"
-                            description="После добавления в архив пользователь не сможет добавлять этапы по договору"
-                            onConfirm={() => {
-                                handlerComplete(contract.documentId)
-                                update()
-                            }}
-                            // onCancel={cancel}
-                            okText="Добавить"
-                            cancelText="Не добавлять"
-                        >
+                        <Flex>
 
-                            <Button
-                                danger
-                            // onClick={() => { handlerComplete(contract.documentId) }}
-                            >Добавить в архив</Button>
-                        </Popconfirm>
+                            <Popconfirm
+                                title="Добавить в архив"
+                                description="После добавления в архив пользователь не сможет добавлять этапы по договору"
+                                onConfirm={() => {
+                                    handlerComplete(contract.documentId)
+                                    update()
+                                }}
+                                // onCancel={cancel}
+                                okText="Добавить"
+                                cancelText="Не добавлять"
+                                okType='danger'
+                            >
+
+                                <Button
+                                    danger
+                                // onClick={() => { handlerComplete(contract.documentId) }}
+                                >Добавить в архив</Button>
+                            </Popconfirm>
+                        </Flex>
                     }
                 </Flex>
             }

@@ -10,6 +10,22 @@ function getJwt() {
 
 
 // Запрос одного договора для пользователя--------------------------------------------------------------------------
+export async function getMyContractItem(idContract) {
+    try {
+        const res = await axios.get(server + `/api/mycontracts/${idContract}`, {
+            headers: {
+                Authorization: `Bearer ${await getJwt()}`
+            }
+        })
+        if (res.data) {
+            // console.log(res.data.data)
+            return res.data
+        }
+
+    } catch (error) {
+        console.log("error getContractItem:", error);
+    }
+}
 export async function getContractItem(idContract) {
     try {
         const res = await axios.get(server + `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose`, {
