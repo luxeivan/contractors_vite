@@ -35,7 +35,7 @@ export default function TableContractor() {
     fetching(defaultPageSize, defaultPage)
   }, [])
 
-  console.log("allContractors", allContractors);
+  // console.log("allContractors", allContractors);
   const columns = [
     // {
     //   title: 'Подрядчик',

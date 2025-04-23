@@ -2,6 +2,7 @@ import {
   addNewContract,
   checkContract,
   getAllContractors,
+  getAllPurposes,
 } from "../../lib/getData";
 import { UploadOutlined } from "@ant-design/icons";
 import {
@@ -46,6 +47,16 @@ export default function ModalAddContract({
       }))
     );
   };
+  const fetchPurposes = async () => {
+    const allPurposes = await getAllPurposes(100, 1);
+    // console.log("allContractors", allContractors)
+    setPurpose(
+      allPurposes.data.map((item) => ({
+        value: item.id,
+        label: item.name,
+      }))
+    );
+  };
 
   const fetchCheckContract = useMemo(
     () =>
@@ -62,6 +73,7 @@ export default function ModalAddContract({
   );
   useEffect(() => {
     fetchContractors()
+    fetchPurposes()
   }, [])
 
 
@@ -162,7 +174,7 @@ export default function ModalAddContract({
           <Input.TextArea />
         </Form.Item>
         <Form.Item name="social" label="Назначение">
-          <Select options={options} />
+          <Select options={purpose} />
         </Form.Item>
 
         <Upload {...props} accept=".jpg,.jpeg,.png,.pdf">
