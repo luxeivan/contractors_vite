@@ -44,7 +44,7 @@ export default function Admin() {
     fetchMyContractor()
   }, [])
   // const contractor = {contracts:[]}
-  console.log("myContractor", myContractor);
+  // console.log("myContractor", myContractor);
   return (
     <Container>
       {myContractor &&
