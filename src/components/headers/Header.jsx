@@ -1,5 +1,5 @@
-import { Flex, Image } from 'antd'
-import React, { useEffect, } from 'react'
+import { Button, Flex, Image, Modal, Typography } from 'antd'
+import React, { useEffect, useState, } from 'react'
 import ButtonLogout from './ButtonLogout'
 import Text from 'antd/es/typography/Text'
 import ButtonBack from './ButtonBack'
@@ -11,11 +11,14 @@ import styles from './header.module.css'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { server } from '../../config'
+import android from '../../img/android.svg'
+import apple from '../../img/apple.svg'
+
 
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-
+  const [openModal, setOpenModal] = useState(false)
   const { user, role, getUser } = useAuth(store => store)
 
   const checkRole = async () => {
@@ -40,6 +43,37 @@ export default function Header() {
       <Flex vertical>
         <Flex justify='space-between' align='center' style={{ padding: 20, width: "100%" }} className={styles.topheader}>
           <Image src={logo} preview={false} width={300} />
+          {user?.role?.type === 'user' &&
+            <>
+              <Text style={{ color: "#0958d9", cursor: "pointer" }} onClick={() => {
+                setOpenModal(true)
+              }}>Рекомендуемое приложение для фотографирования</Text>
+              <Modal
+                open={openModal}
+                onCancel={() => { setOpenModal(false) }}
+                title={"Рекомендуемое приложение для фотографирования"}
+                footer={false}
+                width={{ xxl: 1400 }}
+              >
+                <Flex align='center' justify='space-evenly' gap={30}>
+                  <Flex align='center' justify='center' vertical >
+                    <Typography.Title level={5}>Android</Typography.Title>
+                    <Image src={android} preview={false} width={300} />
+                    <Link to={'https://play.google.com/store/apps/details?id=com.jeyluta.timestampcamerafree'}>
+                      <Button type='primary'>Установить</Button>
+                    </Link>
+                  </Flex>
+                  <Flex align='center' justify='center' vertical >
+                    <Typography.Title level={5}>Apple</Typography.Title>
+                    <Image src={apple} preview={false} width={300} />
+                    <Link to={'https://apps.apple.com/ru/app/timestamp-camera-basic/id840110184'}>
+                      <Button type='primary'>Установить</Button>
+                    </Link>
+                  </Flex>
+                </Flex>
+              </Modal>
+            </>
+          }
 
           {user ?
             <Flex align='center' gap={20} justify='center'>
