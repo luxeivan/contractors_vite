@@ -68,7 +68,7 @@ export default function Contract({ params }) {
                 ) : (
                   <Tag color={"green"}>В работе</Tag>
                 )}
-                {contract.social && <Tag color={"blue"}>Социальный</Tag>}
+                {contract.purpose && <Tag color={contract.purpose.color}>{contract.purpose.name}</Tag>}
               </Flex>
             </Flex>
             <Text

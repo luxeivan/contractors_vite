@@ -63,7 +63,7 @@ export async function getContractorItem(idContractor) {
 // Запрос только своего подрядчика для пользователя--------------------------------------------------------------------------
 export async function getMyContractor() {
     try {
-        const res = await axios.get(server + '/api/mycontractors?populate=contracts', {
+        const res = await axios.get(server + '/api/mycontractors?populate[0]=contracts.purpose', {
             headers: {
 
                 Authorization: `Bearer ${await getJwt()}`
