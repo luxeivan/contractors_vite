@@ -22,11 +22,12 @@ import dayjs from "dayjs";
 const { Text } = Typography;
 
 export default function ModalAddContract({
-  isOpenModalAddContract,
+  // isOpenModalAddContract,
   closeModalAddContract,
   update,
 }) {
   const [contractors, setContractors] = useState([]);
+  const [purpose, setPurpose] = useState([]);
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [idContractor, setIdContractor] = useState(false);
@@ -46,25 +47,28 @@ export default function ModalAddContract({
     );
   };
 
-const fetchCheckContract = useMemo(
-  () =>
-    debounce((idContractor, number, dateContract) => {
-      if (!idContractor || !number || !dateContract) return; // ранний выход
-      checkContract(idContractor, number, dateContract)
-        .then((res) => {
-          console.log("Тестируем", res);
-          setIsCheckContract(res);
-        })
-        .catch((error) => console.log("error", error));
-    }, 1000),
-  []
-);
+  const fetchCheckContract = useMemo(
+    () =>
+      debounce((idContractor, number, dateContract) => {
+        if (!idContractor || !number || !dateContract) return; // ранний выход
+        checkContract(idContractor, number, dateContract)
+          .then((res) => {
+            console.log("Тестируем", res);
+            setIsCheckContract(res);
+          })
+          .catch((error) => console.log("error", error));
+      }, 1000),
+    []
+  );
+  useEffect(() => {
+    fetchContractors()
+  }, [])
 
 
-useEffect(() => {
-  fetchCheckContract(idContractor, number, dateContract);
-  return () => fetchCheckContract.cancel();
-}, [idContractor, number, dateContract, fetchCheckContract]);
+  useEffect(() => {
+    fetchCheckContract(idContractor, number, dateContract);
+    return () => fetchCheckContract.cancel();
+  }, [idContractor, number, dateContract, fetchCheckContract]);
 
   useEffect(() => {
     fetchCheckContract(idContractor, number, dateContract);
@@ -151,8 +155,14 @@ useEffect(() => {
         <Form.Item name="description" label="Предмет договора">
           <Input.TextArea />
         </Form.Item>
-        <Form.Item name="social" label="Социальный объект">
-          <Switch />
+        <Form.Item name="numberTask" label="Номер Тех.Задания">
+          <Input />
+        </Form.Item>
+        <Form.Item name="comment" label="Комментарий">
+          <Input.TextArea />
+        </Form.Item>
+        <Form.Item name="social" label="Назначение">
+          <Select options={options} />
         </Form.Item>
 
         <Upload {...props} accept=".jpg,.jpeg,.png,.pdf">

@@ -6,37 +6,48 @@ import useAuth from '../../store/authStore'
 import { ReloadOutlined } from '@ant-design/icons'
 const options = [
     {
-        value: "magenta"
+        value: "magenta",
+        label: <Tag color='magenta'>magenta</Tag>
     },
     {
-        value: "red"
+        value: "red",
+        label: <Tag color='red'>red</Tag>
     },
     {
-        value: "volcano"
+        value: "volcano",
+        label: <Tag color='volcano'>volcano</Tag>
     },
     {
-        value: "orange"
+        value: "orange",
+        label: <Tag color='orange'>orange</Tag>
     },
     {
-        value: "gold"
+        value: "gold",
+        label: <Tag color='gold'>gold</Tag>
     },
     {
-        value: "lime"
+        value: "lime",
+        label: <Tag color='lime'>lime</Tag>
     },
     {
-        value: "green"
+        value: "green",
+        label: <Tag color='green'>green</Tag>
     },
     {
-        value: "cyan"
+        value: "cyan",
+        label: <Tag color='cyan'>cyan</Tag>
     },
     {
-        value: "blue"
+        value: "blue",
+        label: <Tag color='blue'>blue</Tag>
     },
     {
-        value: "geekblue"
+        value: "geekblue",
+        label: <Tag color='geekblue'>geekblue</Tag>
     },
     {
-        value: "purple"
+        value: "purple",
+        label: <Tag color='purple'>purple</Tag>
     },
 ]
 export default function TablePurpose() {

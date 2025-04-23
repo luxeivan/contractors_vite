@@ -70,7 +70,7 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
         auth: localStorage.getItem('jwt') || undefined
     })
     console.log(filters);
-    
+
     try {
         const contracts = client.collection('contracts');
         const allContracts = await contracts.find({
@@ -139,12 +139,11 @@ export async function getAllPurposes(pageSize = 100, page = 1, filters = {},) {
 }
 
 // Запрос всех подрядчиков для админской учетки--------------------------------------------------------------------------
-export async function getAllContractors(pageSize = 5, page = 1) {
+export async function getAllContractors(pageSize = 5, page = 1, filters = {}) {
 
     try {
         const res = await axios.get(server + `/api/contractors?pagination[pageSize]=${pageSize}&pagination[page]=${page}&sort=createdAt:desc`, {
             headers: {
-
                 Authorization: `Bearer ${await getJwt()}`
             }
         })
@@ -237,13 +236,15 @@ export async function addNewContract(formData, data) {
         // -------------------------------------------------------
 
         if (file) {
-            console.log(file);
+            // console.log(file);
 
             const resContract = await axios.post(server + `/api/contracts`, {
                 data: {
                     number: data.number,
                     dateContract: dayjs(data.dateContract).add(1, 'day'),
                     description: data.description,
+                    numberTask: data.numberTask,
+                    comment: data.comment,
                     social: data.social,
                     document: file.data[0].id,
                     contractor: data.contractor
