@@ -111,12 +111,12 @@ export default function TableContract() {
       dataIndex: 'description',
       key: 'description',
     },
-    // {
-    //   title: 'Социальный объект',
-    //   dataIndex: 'social',
-    //   key: 'social',
-    //   render: bool => bool ? <Tag color={"blue"}>Социальный</Tag> : false,
-    // },
+    {
+      title: 'Номер Тех.Задания',
+      dataIndex: 'numberTask',
+      key: 'numberTask',
+      render: text => <span>{text}</span>,
+    },
     {
       title: 'Назначение',
       dataIndex: 'purpose',
@@ -247,6 +247,7 @@ export default function TableContract() {
                 }}
                 options={listContractors}
                 showSearch={true}
+                optionFilterProp="label"
               />
             }
           </Flex>

@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
 import { server } from "../../config";
 import useAuth from '../../store/authStore'
 
-export default function ModalViewContract({ isOpenModal, closeModal, docIdForModal,update }) {
+export default function ModalViewContract({ isOpenModal, closeModal, docIdForModal, update }) {
     const { user } = useAuth(store => store)
     const [contract, setContracts] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -51,6 +51,11 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
                 children: contract.description,
             },
             {
+                key: '6',
+                label: 'Номер Тех.Задания',
+                children: contract.numberTask,
+            },
+            {
                 key: '2',
                 label: 'Подрядчик',
                 children: contract.contractor.name,
@@ -59,6 +64,11 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
                 key: '3',
                 label: 'ИНН-КПП',
                 children: <span>{contract.contractor.inn}-{contract.contractor.kpp}</span>,
+            },
+            {
+                key: '7',
+                label: 'Комментарий',
+                children: contract.comment,
             },
             {
                 key: '5',
@@ -72,6 +82,8 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
             await fetching(documentIdContract)
         }
     }
+    console.log("contract",contract);
+    
     return (
         <Modal
             open={isOpenModal}
@@ -80,12 +92,12 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
                 <Text style={{ fontSize: 16 }}>Договор№{contract.number}  </Text>
                 <Flex>
                     {contract.completed ? <Tag color={"volcano"}>Архивный</Tag> : <Tag color={"green"}>В работе</Tag>}
-                    {contract.social && <Tag color={"blue"}>Социальный</Tag>}
+                    {contract.purpose && <Tag color={contract.purpose.color}>{contract.purpose.name}</Tag>}
                 </Flex>
             </Flex>
                 : 'Загрузка договора...'}
             footer={false}
-            width={{xl:900,xxl:1400}}
+            width={{ xl: 900, xxl: 1400 }}
         >
             {loading && <Flex justify='center'><Spin /></Flex>}
 
@@ -97,8 +109,8 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
                         <Popconfirm
                             title="Добавить в архив"
                             description="После добавления в архив пользователь не сможет добавлять этапы по договору"
-                            onConfirm={() => { 
-                                handlerComplete(contract.documentId) 
+                            onConfirm={() => {
+                                handlerComplete(contract.documentId)
                                 update()
                             }}
                             // onCancel={cancel}
@@ -106,8 +118,8 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
                             cancelText="Не добавлять"
                         >
 
-                            <Button 
-                            danger 
+                            <Button
+                                danger
                             // onClick={() => { handlerComplete(contract.documentId) }}
                             >Добавить в архив</Button>
                         </Popconfirm>

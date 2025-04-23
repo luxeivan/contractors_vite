@@ -2,6 +2,7 @@ import {
   addNewContract,
   checkContract,
   getAllContractors,
+  getAllPurposes,
 } from "../../lib/getData";
 import { UploadOutlined } from "@ant-design/icons";
 import {
@@ -22,11 +23,12 @@ import dayjs from "dayjs";
 const { Text } = Typography;
 
 export default function ModalAddContract({
-  isOpenModalAddContract,
+  // isOpenModalAddContract,
   closeModalAddContract,
   update,
 }) {
   const [contractors, setContractors] = useState([]);
+  const [purpose, setPurpose] = useState([]);
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [idContractor, setIdContractor] = useState(false);
@@ -40,6 +42,16 @@ export default function ModalAddContract({
     // console.log("allContractors", allContractors)
     setContractors(
       allContractors.data.map((item) => ({
+        value: item.id,
+        label: item.name,
+      }))
+    );
+  };
+  const fetchPurposes = async () => {
+    const allPurposes = await getAllPurposes(100, 1);
+    // console.log("allContractors", allContractors)
+    setPurpose(
+      allPurposes.data.map((item) => ({
         value: item.id,
         label: item.name,
       }))
@@ -60,10 +72,12 @@ export default function ModalAddContract({
     []
   );
 
-
   useEffect(() => {
-    fetchContractors();
-  }, []);
+    fetchContractors()
+    fetchPurposes()
+  }, [])
+
+
 
   useEffect(() => {
     fetchCheckContract(idContractor, number, dateContract);
@@ -155,8 +169,14 @@ export default function ModalAddContract({
         <Form.Item name="description" label="Предмет договора">
           <Input.TextArea />
         </Form.Item>
-        <Form.Item name="social" label="Социальный объект">
-          <Switch />
+        <Form.Item name="numberTask" label="Номер Тех.Задания">
+          <Input />
+        </Form.Item>
+        <Form.Item name="comment" label="Комментарий">
+          <Input.TextArea />
+        </Form.Item>
+        <Form.Item name="social" label="Назначение">
+          <Select options={purpose} />
         </Form.Item>
 
         <Upload {...props} accept=".jpg,.jpeg,.png,.pdf">
