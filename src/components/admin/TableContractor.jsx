@@ -1,10 +1,11 @@
 import { getAllContractors } from '../../lib/getData';
-import { Table, Space, Pagination, Flex, Switch, Button, Modal } from 'antd';
+import { Table, Space, Pagination, Flex, Switch, Button, Modal, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { ReloadOutlined } from '@ant-design/icons';
 import ModalViewContractor from './ModalViewContractor';
 import ModalAddContractor from './ModalAddContractor';
 import useAuth from '../../store/authStore'
+import dayjs from 'dayjs';
 const defaultPageSize = 10
 const defaultPage = 1
 
@@ -54,6 +55,12 @@ export default function TableContractor() {
       key: 'contractor_inn_kpp',
       render: text => <span>{text}</span>,
     },
+    {
+      title: 'Создан',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: date => <span style={{color:"#666"}}>{dayjs(date).format('DD.MM.YYYY')}</span>,
+    },
     // {
     //   title: 'Социальный объект',
     //   dataIndex: 'social',
@@ -80,6 +87,7 @@ export default function TableContractor() {
     documentId: item.documentId,
     name: item.name,
     description: item.description,
+    createdAt: item.createdAt,
     // contractor: item.contractor.name,
     // social: item.social,
     contractor_inn_kpp: `${item.inn}-${item.kpp}`
@@ -115,11 +123,16 @@ export default function TableContractor() {
 
   return (
     <div>
-      <Flex justify='space-between' align='center' style={{ marginBottom: 20 }}>
-        <a onClick={handlerReload}><ReloadOutlined /></a>
-        {user.role.type !== "readadmin" &&
-          <Button onClick={handlerAddNewContract} type='primary'>Добавить нового подрядчика</Button>
-        }
+      <Flex justify='end' align='center' style={{ marginBottom: 20 }}>
+        <Flex gap={20} align='center'>
+
+          <Tooltip title="Обновить">
+            <a onClick={handlerReload}><ReloadOutlined /></a>
+          </Tooltip>
+          {user.role.type !== "readadmin" &&
+            <Button onClick={handlerAddNewContract} type='primary'>Добавить нового подрядчика</Button>
+          }
+        </Flex>
       </Flex>
       <Table
         columns={columns}

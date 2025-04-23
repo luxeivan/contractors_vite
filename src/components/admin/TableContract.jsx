@@ -1,4 +1,4 @@
-import { getAllContractors, getAllContracts } from '../../lib/getData';
+import { getAllContractors, getAllContracts, getAllPurposes } from '../../lib/getData';
 import { Table, Space, Flex, Switch, Button, Modal, Tag, Select, Tooltip } from 'antd';
 import Text from 'antd/es/typography/Text';
 import React, { useEffect, useState } from 'react'
@@ -14,23 +14,47 @@ export default function TableContract() {
   const { user } = useAuth(store => store)
   const [pagination, setPagination] = useState()
   const [allContracts, setAllContracts] = useState()
+  const [allPurposes, setAllPurposes] = useState()
   const [loading, setLoading] = useState(true)
   const [isOpenModal, setIsOpenModal] = useState(false)
   const [isOpenModalAddContract, setIsOpenModalAddContract] = useState(false)
   const [docIdForModal, setDocIdForModal] = useState(null)
-  const [onlyAtWork, setOnlyAtWork] = useState(false)
-  const [onlySocial, setOnlySocial] = useState(false)
+  const [onlyAtWork, setOnlyAtWork] = useState(0)
+  // const [onlySocial, setOnlySocial] = useState(false)
   const [listContractors, setListContractors] = useState(null)
   const [selectedContractor, setSelectedContractor] = useState(null)
+  const [selectedPurpose, setSelectedPurpose] = useState(null)
 
 
   const fetching = async (defaultPageSize, defaultPage) => {
     try {
       setLoading(true)
-      const temp = await getAllContracts(defaultPageSize, defaultPage, { contractorId: selectedContractor, social: onlySocial, completed: onlyAtWork })
+      const temp = await getAllContracts(defaultPageSize, defaultPage, { contractorId: selectedContractor, completed: onlyAtWork, purposeId: selectedPurpose })
       // console.log("temp", temp)
       setAllContracts(temp)
       setLoading(false)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  const fetchPurposes = async () => {
+    try {
+      const res = await getAllPurposes(defaultPageSize, defaultPage)
+      // console.log(res);
+
+      let temp = res?.data?.sort((a, b) => {
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+      }).map(item => ({
+        value: item.id, label: item.name
+      }))
+      temp.unshift({
+        value: false, label: "Все"
+      })
+      setAllPurposes(temp)
     } catch (error) {
       console.log(error);
     }
@@ -59,7 +83,8 @@ export default function TableContract() {
   useEffect(() => {
     fetching(defaultPageSize, defaultPage)
     fetchingContractors(100, 1)
-  }, [selectedContractor, onlyAtWork, onlySocial])
+    fetchPurposes()
+  }, [selectedContractor, onlyAtWork, selectedPurpose])
 
   // console.log("allContracts", allContracts);
   const columns = [
@@ -87,10 +112,16 @@ export default function TableContract() {
       key: 'description',
     },
     {
-      title: 'Социальный объект',
-      dataIndex: 'social',
-      key: 'social',
-      render: bool => bool ? <Tag color={"blue"}>Социальный</Tag> : false,
+      title: 'Номер Тех.Задания',
+      dataIndex: 'numberTask',
+      key: 'numberTask',
+      render: text => <span>{text}</span>,
+    },
+    {
+      title: 'Назначение',
+      dataIndex: 'purpose',
+      key: 'purpose',
+      render: purpose => purpose ? <Tag color={purpose.color}>{purpose.name}</Tag> : false,
     },
     {
       title: 'Количество выполненых этапов',
@@ -127,8 +158,9 @@ export default function TableContract() {
     dateContract: item.dateContract,
     description: item.description,
     contractor: item.contractor?.name,
-    social: item.social,
+    // social: item.social,
     status: item.completed,
+    purpose: item.purpose,
     stepsComplited: item.steps?.length,
     contractor_inn_kpp: `${item.contractor?.inn}/${item.contractor?.kpp}`
   }))
@@ -167,16 +199,42 @@ export default function TableContract() {
     <div>
       <Flex justify='space-between' align='center' style={{ marginBottom: 20 }}>
         <Flex gap={20} align='center'>
-          <Tooltip title="Обновить">
-            <a onClick={handlerReload}><ReloadOutlined /></a>
-          </Tooltip>
-          <Flex gap={10}>
-            <Text>В работе:</Text>
-            <Switch onChange={() => { setOnlyAtWork(!onlyAtWork) }} />
+
+          <Flex gap={10} align='center'>
+            <Text>Статус:</Text>
+            <Select 
+            defaultValue={0}
+            options={[
+              {
+                value: 0,
+                label: "Все",
+
+              },
+              {
+                value: 1,
+                label: "В работе"
+              },
+              {
+                value: 2,
+                label: "Архивный"
+              }
+            ]}
+              style={{ width: 150 }}
+              onChange={(value) => { setOnlyAtWork(value) }}
+            />
           </Flex>
-          <Flex gap={10}>
-            <Text>Социальные объекты:</Text>
-            <Switch onChange={() => { setOnlySocial(!onlySocial) }} />
+          <Flex gap={10} align='center'>
+            <Text>Назначение:</Text>
+            {allPurposes &&
+              <Select
+                defaultValue="Все"
+                style={{ width: 300 }}
+                onChange={(value) => {
+                  setSelectedPurpose(value)
+                }}
+                options={allPurposes}
+              />
+            }
           </Flex>
           <Flex gap={10} align='center'>
             <Text>Подрядчик:</Text>
@@ -188,13 +246,20 @@ export default function TableContract() {
                   setSelectedContractor(value)
                 }}
                 options={listContractors}
+                showSearch={true}
+                optionFilterProp="label"
               />
             }
           </Flex>
         </Flex>
-        {user?.role?.type !== "readadmin" &&
-          <Button onClick={handlerAddNewContract} type='primary'>Добавить новый договор</Button>
-        }
+        <Flex gap={20} align='center'>
+          <Tooltip title="Обновить">
+            <a onClick={handlerReload}><ReloadOutlined /></a>
+          </Tooltip>
+          {user?.role?.type !== "readadmin" &&
+            <Button onClick={handlerAddNewContract} type='primary'>Добавить новый договор</Button>
+          }
+        </Flex>
       </Flex>
       <Table
         columns={columns}

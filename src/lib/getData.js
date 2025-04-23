@@ -12,7 +12,7 @@ function getJwt() {
 // Запрос одного договора для пользователя--------------------------------------------------------------------------
 export async function getContractItem(idContract) {
     try {
-        const res = await axios.get(server + `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos`, {
+        const res = await axios.get(server + `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose`, {
             headers: {
                 Authorization: `Bearer ${await getJwt()}`
             }
@@ -69,9 +69,10 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
         baseURL: `${server}/api`,
         auth: localStorage.getItem('jwt') || undefined
     })
+    // console.log(filters);
+
     try {
         const contracts = client.collection('contracts');
-
         const allContracts = await contracts.find({
             filters: {
                 contractor: filters.contractorId ? {
@@ -79,13 +80,18 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
                         $eq: filters.contractorId
                     }
                 } : undefined,
-                social: filters.social ? filters.social : undefined,
-                completed: filters.completed ? false : undefined
+                // social: filters.social ? filters.social : undefined,
+                completed: filters.completed === 0 ? undefined : (filters.completed === 2 ? true : false),
+                purpose: filters.purposeId ? {
+                    id: {
+                        $eq: filters.purposeId
+                    }
+                } : undefined,
             },
             populate: {
                 steps: true,
                 contractor: true,
-
+                purpose: true
             },
             sort: {
                 dateContract: "desc"
@@ -95,30 +101,49 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
                 pageSize: pageSize,
             }
         });
-        // console.log("allContracts", allContracts.data);
-        // const res = await axios.get(server + `/api/contracts?pagination[pageSize]=${pageSize}&pagination[page]=${page}&populate[0]=contractor&populate[1]=steps&sort=dateContract:desc${contractorId ? '&filters[contractor][id][$eq]=' + contractorId : ''}`, {
-        //     headers: {
-
-        //         Authorization: `Bearer ${await getJwt()}`
-        //     }
-        // })
         if (allContracts.data) {
             return allContracts
         }
-        // console.log("contractors:", contractors);
     } catch (error) {
         console.log("error getAllContracts:", error);
+    }
+}
 
+
+
+// Запрос всех назначений--------------------------------------------------------------------------
+export async function getAllPurposes(pageSize = 100, page = 1, filters = {},) {
+    const client = strapi({
+        baseURL: `${server}/api`,
+        auth: localStorage.getItem('jwt') || undefined
+    })
+    try {
+        const purposes = client.collection('purposes');
+
+        const allPurposes = await purposes.find({
+
+            sort: {
+                name: "asc"
+            },
+            pagination: {
+                page: page,
+                pageSize: pageSize,
+            }
+        });
+        if (allPurposes.data) {
+            return allPurposes
+        }
+    } catch (error) {
+        console.log("error getAllPurposes:", error);
     }
 }
 
 // Запрос всех подрядчиков для админской учетки--------------------------------------------------------------------------
-export async function getAllContractors(pageSize = 5, page = 1) {
+export async function getAllContractors(pageSize = 5, page = 1, filters = {}) {
 
     try {
         const res = await axios.get(server + `/api/contractors?pagination[pageSize]=${pageSize}&pagination[page]=${page}&sort=createdAt:desc`, {
             headers: {
-
                 Authorization: `Bearer ${await getJwt()}`
             }
         })
@@ -211,13 +236,15 @@ export async function addNewContract(formData, data) {
         // -------------------------------------------------------
 
         if (file) {
-            console.log(file);
+            // console.log(file);
 
             const resContract = await axios.post(server + `/api/contracts`, {
                 data: {
                     number: data.number,
                     dateContract: dayjs(data.dateContract).add(1, 'day'),
                     description: data.description,
+                    numberTask: data.numberTask,
+                    comment: data.comment,
                     social: data.social,
                     document: file.data[0].id,
                     contractor: data.contractor

@@ -2,6 +2,7 @@ import { getContractorItemForAdmin, updatePassword } from '../../lib/getData'
 import { Descriptions, Flex, Modal, Spin, Button, Form, Input, Typography, notification } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { passwordStrength } from 'check-password-strength'
+import dayjs from 'dayjs'
 // import { server } from "../../config";
 const { Text } = Typography
 const Context = React.createContext({ name: 'Default' });
@@ -70,6 +71,11 @@ export default function ModalViewContractor({ isOpenModal, closeModal, docIdForM
                 key: '2',
                 label: 'ИНН-КПП',
                 children: `${contractor.inn}-${contractor.kpp}`,
+            },
+            {
+                key: '3',
+                label: 'Создан',
+                children: dayjs(contractor.createdAt).format('DD.MM.YYYY'),
             },
 
             // {

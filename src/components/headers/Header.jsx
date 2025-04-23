@@ -23,7 +23,7 @@ export default function Header() {
       return navigate('/login')
     }
     const user = await getUser()
-    console.log(user);
+    // console.log(user);
 
     if (location.pathname === '/dashboard' && (user?.role?.type === 'admin' || user?.role?.type === 'readadmin')) {
       return navigate('/admin')
