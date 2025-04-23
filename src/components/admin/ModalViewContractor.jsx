@@ -75,7 +75,7 @@ export default function ModalViewContractor({ isOpenModal, closeModal, docIdForM
             {
                 key: '3',
                 label: 'Создан',
-                children: dayjs(contractor.createdAt).format('DD.MM.YYYY'),
+                children: dayjs(contractor.createdAt).format('DD.MM.YYYY HH:mm'),
             },
             {
                 key: '4',

@@ -59,7 +59,7 @@ export default function TableContractor() {
       title: 'Создан',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: date => <span style={{ color: "#666" }}>{dayjs(date).format('DD.MM.YYYY')}</span>,
+      render: date => <span style={{ color: "#666" }}>{dayjs(date).format('DD.MM.YYYY HH:mm')}</span>,
     },
     // {
     //   title: 'Социальный объект',
