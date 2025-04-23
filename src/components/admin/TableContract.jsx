@@ -39,7 +39,7 @@ export default function TableContract() {
   }
   const fetchPurposes = async () => {
     try {
-      const res = await getAllPurposes(defaultPageSize, defaultPage)
+      const res = await getAllPurposes(100, 1)
       // console.log(res);
 
       let temp = res?.data?.sort((a, b) => {
