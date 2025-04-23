@@ -82,7 +82,7 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
             await fetching(documentIdContract)
         }
     }
-    console.log("contract",contract);
+    // console.log("contract",contract);
     
     return (
         <Modal
