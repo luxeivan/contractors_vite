@@ -71,7 +71,6 @@ export default function ModalAddContract({
       }, 1000),
     []
   );
-
   useEffect(() => {
     fetchContractors()
     fetchPurposes()
