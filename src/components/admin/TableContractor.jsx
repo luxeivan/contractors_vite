@@ -52,10 +52,9 @@ export default function TableContractor() {
           )
         : temp.data;
 
-      /* если применён поиск — пересчитываем total и pageCount;
-       иначе оставляем метаданные сервера как есть */
+
       if (search) {
-        const pageSize = temp.meta.pagination.pageSize; // 10, 25, 50…
+        const pageSize = temp.meta.pagination.pageSize; 
         const patchedMeta = {
           ...temp.meta,
           pagination: {
