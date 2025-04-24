@@ -1,5 +1,5 @@
-import { completedContract, getContractItem } from '../../lib/getData'
-import { Button, Descriptions, Flex, Modal, Popconfirm, Spin, Tag } from 'antd'
+import { changePurposeInContract, completedContract, getAllPurposes, getContractItem } from '../../lib/getData'
+import { Button, Descriptions, Flex, Form, Modal, Popconfirm, Select, Spin, Tag } from 'antd'
 import React, { useEffect, useState } from 'react'
 import ViewSteps from './ViewSteps'
 import Title from 'antd/es/typography/Title'
@@ -13,6 +13,17 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
     const { user } = useAuth(store => store)
     const [contract, setContracts] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [purpose, setPurpose] = useState([]);
+    const fetchPurposes = async () => {
+        const allPurposes = await getAllPurposes(100, 1);
+        // console.log("allContractors", allContractors)
+        setPurpose(
+            allPurposes.data.map((item) => ({
+                value: item.id,
+                label: item.name,
+            }))
+        );
+    };
     // console.log(docIdForModal);
 
     const fetching = async (idContract) => {
@@ -27,11 +38,24 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
         }
 
     }
+
     useEffect(() => {
         if (docIdForModal && isOpenModal === true) {
             fetching(docIdForModal)
+            fetchPurposes()
         }
     }, [isOpenModal])
+
+    const handlerChangePurpose = async (event) => {
+        console.log(event);
+        try {            
+            await changePurposeInContract(contract.documentId, event)            
+            fetching(docIdForModal)
+            update()
+        } catch (error) {
+            
+        }
+    }
     let propertiesContract = null
     if (contract) {
         propertiesContract = [
@@ -49,6 +73,11 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
                 key: '1',
                 label: 'Предмет договора',
                 children: contract.description,
+            },
+            {
+                key: '8',
+                label: 'Назначение',
+                children: <Flex ><Select onChange={handlerChangePurpose} style={{ minWidth: 300 }} options={purpose} defaultValue={contract.purpose.id} /></Flex>,
             },
             {
                 key: '6',
@@ -103,7 +132,7 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
 
             {!loading && contract &&
                 <Flex vertical gap={20}>
-                    <Descriptions items={propertiesContract} column={1} />
+                    <Descriptions items={propertiesContract} column={1} bordered />
                     {contract.steps.length === 0 ? <Title level={4} style={{ color: "#f00" }}>Этапов не добавлено</Title> : <ViewSteps steps={contract.steps} />}
                     {user?.role?.type !== "readadmin" && !contract.completed &&
                         <Flex>

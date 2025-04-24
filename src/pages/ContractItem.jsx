@@ -94,7 +94,7 @@ export default function Contract({ params }) {
                 </Link>
               )}
               <ButtonAddStep
-                idContract={idContract}
+                idContract={contract.id}
                 countSteps={countSteps}
                 updateContract={updateContract}
                 contractCompleted={contract.completed}
