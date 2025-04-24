@@ -77,7 +77,7 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
             {
                 key: '8',
                 label: 'Назначение',
-                children: <Flex ><Select onChange={handlerChangePurpose} style={{ minWidth: 300 }} options={purpose} defaultValue={contract.purpose.id} /></Flex>,
+                children: <Flex ><Select onChange={handlerChangePurpose} style={{ minWidth: 300 }} options={purpose} defaultValue={contract.purpose?.id} /></Flex>,
             },
             {
                 key: '6',

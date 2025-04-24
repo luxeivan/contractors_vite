@@ -261,7 +261,8 @@ export async function addNewContract(formData, data) {
                     description: data.description,
                     numberTask: data.numberTask,
                     comment: data.comment,
-                    social: data.social,
+                    // social: data.social,
+                    purpose: data.purpose,
                     document: file.data[0].id,
                     contractor: data.contractor
                 }
