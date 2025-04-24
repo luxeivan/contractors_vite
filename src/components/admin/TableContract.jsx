@@ -201,7 +201,7 @@ export default function TableContract() {
       render: (_, record) => (
         <>
           <Space size="middle">
-            <a onClick={() => openModal(record.documentId)}>Посмотреть</a>
+            <a onClick={() => openModal(record.documentId)}>Открыть договор</a>
           </Space>
           <Space size="middle">
             <a
