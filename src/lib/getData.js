@@ -354,13 +354,40 @@ export async function checkContractor(inn, kpp) {
     }
 }
 // Проверка на существование договора по номеру и дате
-export async function checkContract(idContractor, number, date) {
+export async function checkContract(idContract, number, date) {
     try {
-        const res = await axios.get(server + `/api/contracts?filters[number][$eq]=${number}&filters[dateContract][$eq]=${date}&filters[contractor][id][$eq]=${idContractor}`, {
+        const res = await axios.get(server + `/api/contracts?filters[number][$eq]=${number}&filters[dateContract][$eq]=${date}&filters[contractor][id][$eq]=${idContract}`, {
             headers: {
                 Authorization: `Bearer ${await getJwt()}`
             }
         })
+        if (res.data) {
+            if (res.data.data.length > 0) {
+                return true
+            } else {
+                return false
+            }
+        }
+        // console.log("checkContractor:", res.data);
+    } catch (error) {
+        console.log("error checkContract:", error);
+
+    }
+}
+// Изменение назначения договора
+export async function changePurposeInContract(idContract, newPurposeId) {    
+    try {
+        const res = await axios.put(server + `/api/contracts/${idContract}`,
+            {
+                data: {
+                    purpose: newPurposeId
+                }
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`
+                }
+            })
         if (res.data) {
             if (res.data.data.length > 0) {
                 return true

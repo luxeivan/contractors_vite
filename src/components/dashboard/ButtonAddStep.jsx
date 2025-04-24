@@ -53,7 +53,7 @@ export default function ButtonAddStep({
           Authorization: `Bearer ${jwt}`,
         },
       });
-      // console.log(files)
+      console.log("idContract",idContract)
       if (files && files.data.length > 0) {
         const newStep = await axios.post(
           server + "/api/steps",

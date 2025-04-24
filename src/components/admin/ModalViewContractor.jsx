@@ -111,6 +111,11 @@ export default function ModalViewContractor({
         label: "Создан",
         children: dayjs(contractor.createdAt).format("DD.MM.YYYY"),
       },
+      {
+        key: "4",
+        label: "Комментарий",
+        children: contractor.comment,
+      },
 
       // {
       //     key: '3',
@@ -150,7 +155,7 @@ export default function ModalViewContractor({
         )}
         {!loading && contractor && (
           <Flex vertical gap={20}>
-            <Descriptions items={propertiesContractor} column={1} />
+            <Descriptions items={propertiesContractor} column={1} bordered/>
             {/* {contractor.steps.length === 0 ? <Title level={4} style={{color:"#f00"}}>Этапов не добавлено</Title> : <ViewSteps steps={contractor.steps} />
                     } */}
             <Button
