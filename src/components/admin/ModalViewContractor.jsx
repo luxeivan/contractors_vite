@@ -111,11 +111,11 @@ export default function ModalViewContractor({
         label: "Создан",
         children: dayjs(contractor.createdAt).format("DD.MM.YYYY"),
       },
-      {
-        key: "4",
-        label: "Комментарий",
-        children: contractor.comment,
-      },
+      // {
+      //   key: "4",
+      //   label: "Комментарий",
+      //   children: contractor.comment,
+      // },
 
       // {
       //     key: '3',

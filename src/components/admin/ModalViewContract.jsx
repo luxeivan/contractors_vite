@@ -94,11 +94,11 @@ export default function ModalViewContract({ isOpenModal, closeModal, docIdForMod
                 label: 'ИНН-КПП',
                 children: <span>{contract.contractor.inn}-{contract.contractor.kpp}</span>,
             },
-            {
-                key: '7',
-                label: 'Комментарий',
-                children: contract.comment,
-            },
+            // {
+            //     key: '7',
+            //     label: 'Комментарий',
+            //     children: contract.comment,
+            // },
             {
                 key: '5',
                 label: 'Файл договора',
