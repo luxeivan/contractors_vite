@@ -16,6 +16,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { ReloadOutlined } from "@ant-design/icons";
 import ModalViewContractor from "./ModalViewContractor";
 import ModalAddContractor from "./ModalAddContractor";
+import CommentContractorDrawer from "./CommentContractorDrawer";
 import useAuth from "../../store/authStore";
 import dayjs from "dayjs";
 const defaultPageSize = 10;
@@ -36,6 +37,9 @@ export default function TableContractor() {
   const [isOpenModalAddContract, setIsOpenModalAddContract] = useState(false);
   const [docIdForModal, setDocIdForModal] = useState(null);
 
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [commentContractor, setCommentContractor] = useState(null);
+
   const fetching = async (defaultPageSize, defaultPage) => {
     try {
       setLoading(true);
@@ -52,9 +56,8 @@ export default function TableContractor() {
           )
         : temp.data;
 
-
       if (search) {
-        const pageSize = temp.meta.pagination.pageSize; 
+        const pageSize = temp.meta.pagination.pageSize;
         const patchedMeta = {
           ...temp.meta,
           pagination: {
@@ -114,31 +117,34 @@ export default function TableContractor() {
     //   key: 'social',
     //   render: bool => <Switch disabled defaultValue={bool} />,
     // },
-    {
-      title: "Комментарий",
-      dataIndex: "comment",
-      key: "comment",
-      render: (text) => <span>{text}</span>,
-    },
+    // {
+    //   title: "Комментарий",
+    //   dataIndex: "comment",
+    //   key: "comment",
+    //   render: (text) => <span>{text}</span>,
+    // },
   ];
   if (user?.role?.type !== "readadmin") {
     columns.push({
       title: "Действия",
       key: "action",
       render: (_, record) => (
-        <Space size="middle">
+        <Flex gap={12}>
+          <a onClick={() => openModal(record.documentId)}>Информация</a>
           <a
             onClick={() => {
-              openModal(record.documentId);
+              setCommentContractor(record);
+              setIsCommentsOpen(true);
             }}
           >
-            Посмотреть
+            Комментарии
           </a>
-        </Space>
+        </Flex>
       ),
     });
   }
   const data = allContractors?.data?.map((item) => ({
+    id: item.id,
     key: item.id,
     documentId: item.documentId,
     name: item.name,
@@ -247,6 +253,11 @@ export default function TableContractor() {
           update={handlerReload}
         />
       </Modal>
+      <CommentContractorDrawer
+        open={isCommentsOpen}
+        onClose={() => setIsCommentsOpen(false)}
+        contractor={commentContractor}
+      />
     </div>
   );
 }

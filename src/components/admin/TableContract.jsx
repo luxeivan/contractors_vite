@@ -219,7 +219,7 @@ export default function TableContract() {
   ];
   const data = allContracts?.data?.map((item) => ({
     key: item.id,
-    id: item.id, 
+    id: item.id,
     documentId: item.documentId,
     number: item.number,
     dateContract: item.dateContract,
