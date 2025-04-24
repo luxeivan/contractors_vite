@@ -30,6 +30,7 @@ export default function CommentDrawer({ open, onClose, contract }) {
   const jwt = localStorage.getItem("jwt") || "";
 
   const [myId, setMyId] = useState(null);
+  
   useEffect(() => {
     if (!jwt) return;
     fetchJSON(`${server}/api/users/me`, {
