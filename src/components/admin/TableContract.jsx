@@ -13,9 +13,11 @@ import {
   Tag,
   Select,
   Tooltip,
+  Input,
 } from "antd";
+import { debounce } from "lodash";
 import Text from "antd/es/typography/Text";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import ModalViewContract from "./ModalViewContract";
 import ModalAddContract from "./ModalAddContract";
 import CommentDrawer from "./CommentDrawer";
@@ -35,32 +37,64 @@ export default function TableContract() {
   const [isOpenModalAddContract, setIsOpenModalAddContract] = useState(false);
   const [docIdForModal, setDocIdForModal] = useState(null);
   const [onlyAtWork, setOnlyAtWork] = useState(0);
-  // const [onlySocial, setOnlySocial] = useState(false)
   const [listContractors, setListContractors] = useState(null);
   const [selectedContractor, setSelectedContractor] = useState(null);
   const [selectedPurpose, setSelectedPurpose] = useState(null);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [commentContract, setCommentContract] = useState(null);
 
-  const fetching = async (defaultPageSize, defaultPage) => {
+  const [searchTask, setSearchTask] = useState("");
+  const debouncedTask = useMemo(
+    () => debounce((v) => setSearchTask(v.trim()), 500),
+    []
+  );
+
+  const fetching = async (pageSize = defaultPageSize, page = defaultPage) => {
     try {
       setLoading(true);
-      const temp = await getAllContracts(defaultPageSize, defaultPage, {
+
+      const temp = await getAllContracts(pageSize, page, {
         contractorId: selectedContractor,
         completed: onlyAtWork,
         purposeId: selectedPurpose,
       });
-      // console.log("temp", temp)
-      setAllContracts(temp);
+
+      const filtered = searchTask
+        ? temp.data.filter((c) =>
+            (c.numberTask || "")
+              .toLowerCase()
+              .includes(searchTask.toLowerCase())
+          )
+        : temp.data;
+
+      const patched = searchTask
+        ? {
+            ...temp,
+            data: filtered,
+            meta: {
+              ...temp.meta,
+              pagination: {
+                ...temp.meta.pagination,
+                total: filtered.length,
+                pageCount: Math.ceil(
+                  filtered.length / temp.meta.pagination.pageSize
+                ),
+              },
+            },
+          }
+        : temp;
+
+      setAllContracts(patched);
+    } catch (e) {
+      console.error(e);
+    } finally {
       setLoading(false);
-    } catch (error) {
-      console.log(error);
     }
   };
+
   const fetchPurposes = async () => {
     try {
       const res = await getAllPurposes(100, 1);
-      // console.log(res);
 
       let temp = res?.data
         ?.sort((a, b) => {
@@ -110,18 +144,15 @@ export default function TableContract() {
 
   useEffect(() => {
     fetching(defaultPageSize, defaultPage);
-    fetchingContractors(100, 1);
-    fetchPurposes();
-  }, [selectedContractor, onlyAtWork, selectedPurpose]);
+    return () => debouncedTask.cancel();
+  }, [selectedContractor, onlyAtWork, selectedPurpose, searchTask]);
 
-  // console.log("allContracts", allContracts);
+  useEffect(() => {
+    fetchPurposes();
+    fetchingContractors(100, 1);
+  }, []);
+
   const columns = [
-    // {
-    //   title: 'ИНН/КПП',
-    //   dataIndex: 'contractor_inn_kpp',
-    //   key: 'contractor_inn_kpp',
-    //   render: text => <span>{text}</span>,
-    // },
     {
       title: "Номер договора",
       dataIndex: "number",
@@ -175,26 +206,7 @@ export default function TableContract() {
           <Tag color={"green"}>В работе</Tag>
         ),
     },
-    // {
-    //   title: "Действия",
-    //   key: "action",
-    //   render: (_, record) => (
-    //     <>
-    //       <Space size="middle">
-    //         <a
-    //           onClick={() => {
-    //             openModal(record.documentId);
-    //           }}
-    //         >
-    //           Посмотреть
-    //         </a>
-    //       </Space>
-    //       <Space size="middle">
-    //         <a>Комментарии</a>
-    //       </Space>
-    //     </>
-    //   ),
-    // },
+
     {
       title: "Действия",
       key: "action",
@@ -259,8 +271,6 @@ export default function TableContract() {
   const closeModalAddContract = async () => {
     setIsOpenModalAddContract(false);
   };
-  // console.log("listContractors", listContractors);
-  // console.log("selectedContractor", selectedContractor);
 
   return (
     <div>
@@ -303,6 +313,14 @@ export default function TableContract() {
               />
             )}
           </Flex>
+
+          <Input
+            placeholder="Поиск по № Тех.-задания"
+            allowClear
+            style={{ width: 240 }}
+            onChange={(e) => debouncedTask(e.target.value)}
+          />
+
           <Flex gap={10} align="center">
             <Text>Подрядчик:</Text>
             {listContractors && (
@@ -385,16 +403,6 @@ export default function TableContract() {
         onClose={() => setIsCommentsOpen(false)}
         contract={commentContract}
       />
-
-      {/* <Pagination
-        total={allContracts.meta.pagination.total}
-        showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
-        defaultPageSize={5}
-        pageSize={5}
-        defaultCurrent={1}
-        showSizeChanger={true}
-        pageSizeOptions={[25,50,100]}
-        /> */}
     </div>
   );
 }
