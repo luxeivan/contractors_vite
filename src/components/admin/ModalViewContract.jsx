@@ -24,7 +24,29 @@ import { Link } from "react-router-dom";
 import { server } from "../../config";
 import useAuth from "../../store/authStore";
 
+const fetchJSON = (url, opt = {}) =>
+  fetch(url, opt).then(async (r) => {
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error?.message || r.statusText);
+    return j;
+  });
 
+async function logContractAction({ contractId, text }) {
+  const jwt = localStorage.getItem("jwt") || "";
+  const me = await fetchJSON(`${server}/api/users/me`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  await fetchJSON(`${server}/api/comments`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${jwt}`,
+    },
+    body: JSON.stringify({
+      data: { text, contract: contractId, author: me.id },
+    }),
+  });
+}
 
 export default function ModalViewContract({
   isOpenModal,
@@ -67,13 +89,20 @@ export default function ModalViewContract({
     }
   }, [isOpenModal]);
 
-  const handlerChangePurpose = async (event) => {
-    console.log(event);
+  const handlerChangePurpose = async (newPurposeId) => {
     try {
-      await changePurposeInContract(contract.documentId, event);
-      fetching(docIdForModal);
+      await changePurposeInContract(contract.documentId, newPurposeId);
+      await logContractAction({
+        contractId: contract.id,
+        text: `📌 Назначение изменено на «${
+          purpose.find((p) => p.value === newPurposeId)?.label ?? "—"
+        }»`,
+      });
+      await fetching(docIdForModal);
       update();
-    } catch (error) {}
+    } catch (error) {
+      console.log("error changePurpose:", error);
+    }
   };
 
   let propertiesContract = null;
@@ -148,12 +177,21 @@ export default function ModalViewContract({
       },
     ];
   }
-  
+
   const handlerComplete = async (documentIdContract) => {
-    if (await completedContract(documentIdContract)) {
-      await fetching(documentIdContract);
+    try {
+      if (await completedContract(documentIdContract)) {
+        await logContractAction({
+          contractId: contract.id,
+          text: "🗄️ Договор переведён в архив",
+        });
+        await fetching(documentIdContract);
+      }
+    } catch (error) {
+      console.log("error completeContract:", error);
     }
   };
+
   // console.log("contract",contract);
 
   return (
