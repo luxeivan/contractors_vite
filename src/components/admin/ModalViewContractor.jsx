@@ -17,6 +17,8 @@ import dayjs from "dayjs";
 const { Text } = Typography;
 const Context = React.createContext({ name: "Default" });
 
+import { server } from "../../config";
+
 function generatePassword(length = 12) {
   const specials = "!_-";
   const lowers = "abcdefghijklmnopqrstuvwxyz";
@@ -50,8 +52,8 @@ export default function ModalViewContractor({
   const [loading, setLoading] = useState(true);
   const [openChangePassword, setOpenChangePassword] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
-
   const [api, contextHolder] = notification.useNotification();
+
   const openNotification = () => {
     api.success({
       message: `Пароль изменен`,
@@ -64,17 +66,43 @@ export default function ModalViewContractor({
   const onFinish = async (values) => {
     try {
       setChangingPassword(true);
-      // const newContractor = await addNewContractor(values)
-      const newPass = await updatePassword(contractor.user.id, values.password);
-      // console.log('newContractor:', newContractor);
+
+      /* 1. меняем пароль у пользователя подрядчика */
+      await updatePassword(contractor.user.id, values.password);
+
+      /* 2. пишем событие-лог в коллекцию comment-contractor */
+      const jwt = localStorage.getItem("jwt") || "";
+      const meRes = await fetch(`${server}/api/users/me`, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
+      const me = await meRes.json(); // { id, username, ... }
+
+      const body = {
+        data: {
+          text: "⚙️  Пароль пользователя был изменён",
+          contractor: contractor.id,
+          author: me.id, // ← фикс: сохраняем админа-автора
+        },
+      };
+
+      await fetch(`${server}/api/comment-contractors`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      /* 3. завершаем процедуру */
       setChangingPassword(false);
       setOpenChangePassword(false);
       formChangePassword.resetFields();
       openNotification();
     } catch (error) {
       console.log("Ошибка замены пароля", error);
+      setChangingPassword(false);
     }
-    // router.refresh()
   };
 
   const fetching = async (idContract) => {
@@ -88,12 +116,15 @@ export default function ModalViewContractor({
       console.log(error);
     }
   };
+
   useEffect(() => {
     if (docIdForModal && isOpenModal === true) {
       fetching(docIdForModal);
     }
   }, [isOpenModal]);
+
   let propertiesContractor = null;
+
   if (contractor) {
     propertiesContractor = [
       {
@@ -125,7 +156,6 @@ export default function ModalViewContractor({
     ];
   }
 
-  /* автогенерация пароля для формы изменения пароля */
   const handleGeneratePassword = () => {
     const newPassword = generatePassword(12);
     formChangePassword.setFieldsValue({
@@ -155,7 +185,7 @@ export default function ModalViewContractor({
         )}
         {!loading && contractor && (
           <Flex vertical gap={20}>
-            <Descriptions items={propertiesContractor} column={1} bordered/>
+            <Descriptions items={propertiesContractor} column={1} bordered />
             {/* {contractor.steps.length === 0 ? <Title level={4} style={{color:"#f00"}}>Этапов не добавлено</Title> : <ViewSteps steps={contractor.steps} />
                     } */}
             <Button
