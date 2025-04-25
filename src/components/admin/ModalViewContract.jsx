@@ -94,9 +94,8 @@ export default function ModalViewContract({
       await changePurposeInContract(contract.documentId, newPurposeId);
       await logContractAction({
         contractId: contract.id,
-        text: `📌 Назначение изменено на «${
-          purpose.find((p) => p.value === newPurposeId)?.label ?? "—"
-        }»`,
+        text: `📌 Назначение изменено на «${purpose.find((p) => p.value === newPurposeId)?.label ?? "—"
+          }»`,
       });
       await fetching(docIdForModal);
       update();
@@ -131,12 +130,15 @@ export default function ModalViewContract({
         label: "Назначение",
         children: (
           <Flex>
-            <Select
-              onChange={handlerChangePurpose}
-              style={{ minWidth: 300 }}
-              options={purpose}
-              defaultValue={contract.purpose?.id}
-            />
+            {user?.role?.type === "readadmin" ?
+              <Tag color={contract.purpose.color}>{contract.purpose.name}</Tag> :
+              <Select
+                onChange={handlerChangePurpose}
+                style={{ minWidth: 300 }}
+                options={purpose}
+                defaultValue={contract.purpose?.id}
+              />
+            }
           </Flex>
         ),
       },
@@ -254,7 +256,7 @@ export default function ModalViewContract({
               >
                 <Button
                   danger
-                  // onClick={() => { handlerComplete(contract.documentId) }}
+                // onClick={() => { handlerComplete(contract.documentId) }}
                 >
                   Добавить в архив
                 </Button>
