@@ -23,7 +23,9 @@ import ModalAddContract from "./ModalAddContract";
 import CommentDrawer from "./CommentDrawer";
 import { ReloadOutlined } from "@ant-design/icons";
 import useAuth from "../../store/authStore";
+import { server } from "../../config";
 import dayjs from "dayjs";
+import axios from "axios";
 const defaultPageSize = 10;
 const defaultPage = 1;
 
@@ -42,6 +44,7 @@ export default function TableContract() {
   const [selectedPurpose, setSelectedPurpose] = useState(null);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [commentContract, setCommentContract] = useState(null);
+  const [commentsCount, setCommentsCount] = useState({});
 
   const [searchTask, setSearchTask] = useState("");
   const debouncedTask = useMemo(
@@ -152,6 +155,35 @@ export default function TableContract() {
     fetchingContractors(100, 1);
   }, []);
 
+  useEffect(() => {
+    const fetchCommentsCount = async () => {
+      if (!allContracts?.data) return;
+
+      const counts = {};
+      const jwt = localStorage.getItem("jwt");
+
+      await Promise.all(
+        allContracts.data.map(async (contract) => {
+          try {
+            const res = await axios.get(
+              `${server}/api/comments?filters[contract][id][$eq]=${contract.id}`,
+              {
+                headers: { Authorization: `Bearer ${jwt}` },
+              }
+            );
+            counts[contract.id] = res.data.meta?.pagination?.total || 0;
+          } catch (error) {
+            counts[contract.id] = 0;
+          }
+        })
+      );
+
+      setCommentsCount(counts);
+    };
+
+    fetchCommentsCount();
+  }, [allContracts]);
+
   const columns = [
     {
       title: "Номер договора",
@@ -206,7 +238,6 @@ export default function TableContract() {
           <Tag color={"green"}>В работе</Tag>
         ),
     },
-
     {
       title: "Действия",
       key: "action",
@@ -222,12 +253,34 @@ export default function TableContract() {
                 setIsCommentsOpen(true);
               }}
             >
-              Комментарии
+              Комментарии ({commentsCount[record.id] || 0})
             </a>
           </Space>
         </>
       ),
     },
+
+    // {
+    //   title: "Действия",
+    //   key: "action",
+    //   render: (_, record) => (
+    //     <>
+    //       <Space size="middle">
+    //         <a onClick={() => openModal(record.documentId)}>Открыть договор</a>
+    //       </Space>
+    //       <Space size="middle">
+    //         <a
+    //           onClick={() => {
+    //             setCommentContract(record);
+    //             setIsCommentsOpen(true);
+    //           }}
+    //         >
+    //           Комментарии
+    //         </a>
+    //       </Space>
+    //     </>
+    //   ),
+    // },
   ];
   const data = allContracts?.data?.map((item) => ({
     key: item.id,
