@@ -9,7 +9,7 @@ import useAuth from '../../store/authStore'
 import logo from '../../img/MO_energo-logo-main.png'
 import styles from './header.module.css'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { QuestionCircleOutlined } from '@ant-design/icons'
+import { ExclamationCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { server } from '../../config'
 import android from '../../img/android.svg'
 import apple from '../../img/apple.svg'
@@ -47,7 +47,7 @@ export default function Header() {
             <>
               <Text style={{ color: "#0958d9", cursor: "pointer" }} onClick={() => {
                 setOpenModal(true)
-              }}>Рекомендуемое приложение для фотографирования</Text>
+              }}><span style={{color:"red", }}><ExclamationCircleOutlined /></span>  Рекомендуемое приложение для фотографирования</Text>
               <Modal
                 open={openModal}
                 onCancel={() => { setOpenModal(false) }}
