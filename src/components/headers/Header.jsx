@@ -1,4 +1,4 @@
-import { Button, Flex, Image, Modal, Typography } from "antd";
+import { Button, Flex, Image, Modal, Typography, Tooltip } from "antd";
 import React, { useEffect, useState } from "react";
 import ButtonLogout from "./ButtonLogout";
 import Text from "antd/es/typography/Text";
@@ -13,6 +13,8 @@ import { QuestionCircleOutlined } from "@ant-design/icons";
 import { server } from "../../config";
 import android from "../../img/android.svg";
 import apple from "../../img/apple.svg";
+
+import { ExclamationCircleFilled } from "@ant-design/icons";
 
 export default function Header() {
   const location = useLocation();
@@ -52,13 +54,17 @@ export default function Header() {
           <Image src={logo} preview={false} width={300} />
           {user?.role?.type === "user" && (
             <>
-              
-              <Text
-                className={styles.appHint}
-                onClick={() => setOpenModal(true)}
-              >
-                Рекомендуемое приложение для фотографирования
-              </Text>
+              <Tooltip title="Приложение автоматически вставляет на фотографию текущее время и адрес">
+                <Flex
+                  align="center"
+                  gap={6}
+                  className={styles.appHint}
+                  onClick={() => setOpenModal(true)}
+                >
+                  <ExclamationCircleFilled className={styles.alertIcon} />
+                  <Text>Рекомендуемое приложение для фотографирования</Text>
+                </Flex>
+              </Tooltip>
               {/* <Text
                 style={{ color: "#0958d9", cursor: "pointer" }}
                 onClick={() => {
@@ -76,6 +82,14 @@ export default function Header() {
                 footer={false}
                 width={{ xxl: 1400 }}
               >
+                <Typography.Paragraph
+                  type="secondary"
+                  style={{ marginBottom: 20 }}
+                >
+                  Приложение автоматически вставляет на фотографию
+                  текущее&nbsp;время и&nbsp;адрес
+                </Typography.Paragraph>
+
                 <Flex align="center" justify="space-evenly" gap={30}>
                   <Flex align="center" justify="center" vertical>
                     <Typography.Title level={5}>Android</Typography.Title>
