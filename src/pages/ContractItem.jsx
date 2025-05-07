@@ -71,6 +71,7 @@ export default function Contract({ params }) {
                 {contract.purpose && <Tag color={contract.purpose.color}>{contract.purpose.name}</Tag>}
               </Flex>
             </Flex>
+              {contract.numberTask ? <Text style={{fontSize: 18,margin:"20px 0", color: "#000", fontStyle: "normal",fontWeight:600 }}>Тех.Задание: <span style={{ color: "#000", fontStyle: "normal",fontWeight:600 }}>{contract.numberTask}</span></Text> : undefined}
             <Text
               style={{
                 color: "#888",

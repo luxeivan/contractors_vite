@@ -96,7 +96,7 @@ export default function Admin() {
               </Flex>
             </Flex>
           </Flex>
-          <Flex gap={20} style={{ margin: "20px 0" }} wrap="wrap">
+          <Flex gap={20} style={{ margin: "20px 0" }} wrap="wrap" align='stretch'>
 
             {myContractor.contracts.filter(item => {
               if (onlyAtWork === 0) {
@@ -113,9 +113,9 @@ export default function Admin() {
 
             }).filter(item => {
               if (selectedPurpose) {
-                if (selectedPurpose === item.purpose?.id){
+                if (selectedPurpose === item.purpose?.id) {
                   return true
-                }else{
+                } else {
                   return false
                 }
               } else {
@@ -123,9 +123,10 @@ export default function Admin() {
               }
             }).sort((a, b) => new Date(b.dateContract) - new Date(a.dateContract))
               .map(item =>
-                <Link key={item.id} to={`/dashboard/contracts/${item.documentId}`}>
+                <Link key={item.id} to={`/dashboard/contracts/${item.documentId}`} >
                   <Card
                     hoverable
+                    style={{ height: "100%" }}
                     title={
                       <Flex gap={20}>
                         <Flex gap={5}>
@@ -137,7 +138,9 @@ export default function Admin() {
                           {item.purpose && <Tag color={item.purpose.color}>{item.purpose.name}</Tag>}
                         </Flex>
                       </Flex>
-                    }>
+                    }
+                    actions={item.numberTask ? [<Text style={{ color: "#000", fontStyle: "normal",fontWeight:600 }}>Тех.Задание: <span style={{ color: "#000", fontStyle: "normal",fontWeight:600 }}>{item.numberTask}</span></Text>] : undefined}
+                  >
                     <Flex vertical align='center'>
 
                       <Text style={{ maxWidth: 400 }}>{item.description}</Text>
