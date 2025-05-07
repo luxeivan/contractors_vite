@@ -1,8 +1,47 @@
-.topheader{
-    flex-wrap: nowrap;
+.topheader {
+  flex-wrap: nowrap;
 }
-@media (max-width:1200px) {
-    .topheader{
-        flex-wrap: wrap;
-    }  
+
+/* аккуратная мигающая точка слева от текста */
+@keyframes blinkDot {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  60%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.appHint {
+  color: #0958d9;
+  cursor: pointer;
+  position: relative; /* нужно для псевдо-элемента */
+  display: inline-block; 
+}
+
+.appHint::before {
+  content: "";
+  position: absolute;
+  left: -12px; 
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: red;
+  animation: blinkDot 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .appHint::before {
+    animation: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  .topheader {
+    flex-wrap: wrap;
+  }
 }
