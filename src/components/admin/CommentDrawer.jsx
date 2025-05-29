@@ -139,7 +139,7 @@ export default function CommentDrawer({ open, onClose, contract }) {
       onClose={onClose}
       title={`Комментарии к договору ${contract?.number || ""}`}
       destroyOnClose
-      bodyStyle={{ padding: 0 }}
+      styles={{body:{padding:0}}}
     >
       <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
         <div style={{ flex: 1, overflowY: "auto", padding: 24 }}>

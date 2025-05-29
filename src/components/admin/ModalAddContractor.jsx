@@ -1,5 +1,5 @@
 import { addNewContractor, checkContractor } from "../../lib/getData";
-import { Button, Flex, Form, Input, Select } from "antd";
+import { Button, Flex, Form, Input, Select, Space } from "antd";
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { passwordStrength } from "check-password-strength";
@@ -202,7 +202,7 @@ export default function ModalAddContractor({
 
       {/* Пароль с кнопкой генерации */}
       <Form.Item label="Пароль" required>
-        <Input.Group compact>
+        <Space.Compact >
           <Form.Item
             name="password"
             noStyle
@@ -226,7 +226,7 @@ export default function ModalAddContractor({
           <Button style={{ width: 120 }} onClick={handleGeneratePassword}>
             Сгенерировать
           </Button>
-        </Input.Group>
+        </Space.Compact>
       </Form.Item>
 
       <Form.Item
