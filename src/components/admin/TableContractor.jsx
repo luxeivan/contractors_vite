@@ -96,7 +96,7 @@ export default function TableContractor() {
       render: (text) => <span>{text}</span>,
     },
     {
-      title: "ИНН-КПП",
+      title: "ИНН-КПП(ОГРНИП)",
       dataIndex: "contractor_inn_kpp",
       key: "contractor_inn_kpp",
       render: (text) => <span>{text}</span>,
@@ -153,7 +153,7 @@ export default function TableContractor() {
     comment: item.comment,
     // contractor: item.contractor.name,
     // social: item.social,
-    contractor_inn_kpp: `${item.inn}-${item.kpp}`,
+    contractor_inn_kpp: item.kpp?`${item.inn}-${item.kpp}`:`${item.inn}-${item.ogrnip}`,
   }));
 
   const handlerReload = async () => {

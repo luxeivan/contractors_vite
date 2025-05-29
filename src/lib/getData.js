@@ -204,8 +204,8 @@ export async function addNewContractor(data) {
         // ---------------------------------------------------
         const resUser = await axios.post(server + `/api/users`, {
 
-            username: `${data.inn}-${data.kpp}`,
-            email: `${data.inn}@${data.kpp}.ru`,
+            username: data.type === 1 ? `${data.inn}-${data.kpp}` : `${data.inn}-${data.ogrnip}`,
+            email: data.type === 1 ? `${data.inn}@${data.kpp}.ru` : `${data.inn}@${data.ogrnip}.ru`,
             password: data.password,
             role: roleList.data.roles.find(item => item.type === 'user').id,
             confirmed: true
@@ -222,6 +222,7 @@ export async function addNewContractor(data) {
                     name: data.name,
                     inn: data.inn,
                     kpp: data.kpp,
+                    ogrnip: data.ogrnip,
                     user: resUser.data.id,
                 }
             }, {
@@ -334,9 +335,9 @@ export async function completedContract(documentId) {
 }
 
 // Проверка на существование подрядчика по ИНН и КПП
-export async function checkContractor(inn, kpp) {
+export async function checkContractor(inn, value2) {
     try {
-        const res = await axios.get(server + `/api/contractors?filters[inn][$eq]=${inn}&filters[kpp][$eq]=${kpp}`, {
+        const res = await axios.get(server + `/api/contractors?filters[inn][$eq]=${inn}&filters[$or][0][kpp][$eq]=${value2}&filters[$or][1][ogrnip][$eq]=${value2}`, {
             headers: {
                 Authorization: `Bearer ${await getJwt()}`
             }
@@ -376,7 +377,7 @@ export async function checkContract(idContract, number, date) {
     }
 }
 // Изменение назначения договора
-export async function changePurposeInContract(idContract, newPurposeId) {    
+export async function changePurposeInContract(idContract, newPurposeId) {
     try {
         const res = await axios.put(server + `/api/contracts/${idContract}`,
             {
