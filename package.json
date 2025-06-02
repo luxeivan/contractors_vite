@@ -17,6 +17,7 @@
     "blueimp-load-image": "^5.16.0",
     "check-password-strength": "^3.0.0",
     "dayjs": "^1.11.13",
+    "exif-js": "^2.3.0",
     "framer-motion": "^12.14.0",
     "lodash": "^4.17.21",
     "react": "^19.0.0",

@@ -1,3 +1,5 @@
+// src/components/dashboard/ButtonAddStep.jsx
+
 import {
   UploadOutlined,
   DeleteOutlined,
@@ -11,7 +13,7 @@ import {
   Modal,
   Upload,
   Typography,
-  Flex,
+  Space,
   Popconfirm,
   message,
 } from "antd";
@@ -20,8 +22,8 @@ import React, { useState } from "react";
 import { server } from "../../config";
 
 const { Text } = Typography;
-const MAX_TOTAL = 20 * 1024 * 1024; 
-const ALLOWED_RE = /\.(jpe?g|png)$/i; 
+const MAX_TOTAL_SIZE = 20 * 1024 * 1024; // 20 МБ
+const ALLOWED_RE = /\.(jpe?g|png)$/i; // jpg | jpeg | png
 
 export default function ButtonAddStep({
   idContract,
@@ -31,103 +33,186 @@ export default function ButtonAddStep({
 }) {
   const [form] = Form.useForm();
   const jwt = localStorage.getItem("jwt");
-  const [msg, ctx] = message.useMessage();
+  const [msg, contextHolder] = message.useMessage();
 
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
 
-  /** список прикреплённых файлов
-   *  { uid, file, thumbUrl, rotated (bool) } */
+  /**
+   * Список файлов:
+   * [
+   *   {
+   *     uid: string,
+   *     file: File,          // оригинальный или повёрнутый File
+   *     thumbUrl: string,    // URL.createObjectURL(…) для предпросмотра
+   *     rotated: boolean,    // true, если уже был поворот (авто или ручной)
+   *   },
+   *   …
+   * ]
+   */
   const [items, setItems] = useState([]);
 
-  /* ─────────────────────────── utils */
+  /* ───────────────────────────────────── helpers ───────────────────────────────────── */
 
-  const dataURL = (file) =>
-    new Promise((r) => {
+  // Считает File как dataURL
+  const fileToDataURL = (file) =>
+    new Promise((resolve, reject) => {
       const fr = new FileReader();
-      fr.onload = (e) => r(e.target.result);
+      fr.onload = (e) => resolve(e.target.result);
+      fr.onerror = () => reject();
       fr.readAsDataURL(file);
     });
 
-  /** повернуть на 90° CW ⇒ File+thumb */
-  const rotateCW = async (it) => {
-    const img = await new Promise((r) => {
+  // Поворачивает изображение на заданный угол (90/180/270) и возвращает { file: File, thumbUrl: string }
+  const rotateImage = async (orig, angle) => {
+    const img = await new Promise((res) => {
       const i = new Image();
-      i.onload = () => r(i);
-      i.src = it.thumbUrl;
+      i.onload = () => res(i);
+      i.src = orig.thumbUrl;
     });
 
-    const c = document.createElement("canvas");
-    const cx = c.getContext("2d");
-    c.width = img.height;
-    c.height = img.width;
+    const radians = (angle * Math.PI) / 180;
+    const sin = Math.sin(radians);
+    const cos = Math.cos(radians);
 
-    cx.translate(c.width / 2, c.height / 2);
-    cx.rotate(Math.PI / 2);
-    cx.drawImage(img, -img.width / 2, -img.height / 2);
+    const w = img.width;
+    const h = img.height;
 
-    return new Promise((r) =>
-      c.toBlob(
+    // Новый canvas
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Если угол 90 или 270, меняем размеры
+    if (angle === 90 || angle === 270) {
+      canvas.width = h;
+      canvas.height = w;
+    } else {
+      canvas.width = w;
+      canvas.height = h;
+    }
+
+    // Переносим в центр и поворачиваем
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(radians);
+    ctx.drawImage(img, -w / 2, -h / 2);
+
+    return new Promise((resolve) => {
+      canvas.toBlob(
         (blob) => {
-          const f = new File([blob], it.file.name, { type: it.file.type });
-          const url = URL.createObjectURL(f);
-          r({ ...it, file: f, thumbUrl: url, rotated: true });
+          const rotatedFile = new File([blob], orig.file.name, {
+            type: orig.file.type,
+          });
+          const url = URL.createObjectURL(rotatedFile);
+          resolve({ file: rotatedFile, thumbUrl: url });
         },
-        it.file.type,
+        orig.file.type,
         0.9
-      )
-    );
+      );
+    });
   };
 
-  /* ─────────────────────────── Upload */
+  // Проверяет ориентацию: если высота > ширины (вертикальное), поворачивает на 90°
+  // Возвращает обновлённый айтем (с rotated=true), а если не нужно — тот же объект, но с rotated=false
+  const applyAutoRotate = async (item) => {
+    const { file } = item;
+    // Сначала получаем dataURL (он уже в item.thumbUrl, потому что мы создали)
+    // Загружаем в Image
+    const img = await new Promise((res) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.src = item.thumbUrl;
+    });
+
+    if (img.height > img.width) {
+      // Вертикальная: поворачиваем на 90°
+      const rotated = await rotateImage(item, 90);
+      console.log(`✅ ${item.file.name} — поворачивается на 90° (авто)`);
+      return {
+        uid: item.uid,
+        file: rotated.file,
+        thumbUrl: rotated.thumbUrl,
+        rotated: true,
+      };
+    } else {
+      // Уже горизонтальная: без изменений
+      return { ...item, rotated: false };
+    }
+  };
+
+  /* ───────────────────────────────── uploadProps ───────────────────────────────── */
 
   const uploadProps = {
     multiple: true,
     accept: ".jpg,.jpeg,.png",
     showUploadList: false,
-    beforeUpload: async (raw) => {
-      if (!ALLOWED_RE.test(raw.name)) {
-        msg.error("Допустимы только файлы jpg / jpeg / png");
+    beforeUpload: async (rawFile) => {
+      // Проверка расширения
+      if (!ALLOWED_RE.test(rawFile.name)) {
+        msg.error("Допускаются только файлы .jpg, .jpeg или .png");
         return Upload.LIST_IGNORE;
       }
 
-      let thumbUrl = await dataURL(raw);
-      let obj = {
+      // Создаём начальный dataURL
+      let thumb = await fileToDataURL(rawFile);
+      let newItem = {
         uid: crypto.randomUUID(),
-        file: raw,
-        thumbUrl,
+        file: rawFile,
+        thumbUrl: thumb,
         rotated: false,
       };
 
-      // авто-переворот: если вертикаль — крутим
-      const img = new Image();
-      img.src = thumbUrl;
-      img.onload = async () => {
-        if (img.height > img.width) {
-          obj = await rotateCW(obj);
-          console.log(`✅ ${obj.file.name} — ориентация исправлена (auto)`);
-          msg.info(`${obj.file.name}: авто-переворот`, 2);
-        }
-        setItems((p) => [...p, obj]);
-      };
+      // Применяем авто-поворот, если нужно
+      newItem = await applyAutoRotate(newItem);
 
-      return Upload.LIST_IGNORE; // ручная загрузка
+      // Добавляем в массив
+      setItems((prev) => [...prev, newItem]);
+
+      // Возвращаем LIST_IGNORE, чтобы антовский Upload не пытался сам отправить
+      return Upload.LIST_IGNORE;
     },
   };
 
-  /* ─────────────────────────── submit */
+  /* ───────────────────────────────── handlers ───────────────────────────────── */
 
-  const finish = async (vals) => {
+  const removeItem = (uid) => {
+    setItems((prev) => prev.filter((it) => it.uid !== uid));
+  };
+
+  const rotateManual = async (item) => {
+    // Каждый клик +90°
+    const updated = await rotateImage(item, 90);
+    setItems((prev) =>
+      prev.map((it) =>
+        it.uid === item.uid
+          ? {
+              uid: it.uid,
+              file: updated.file,
+              thumbUrl: updated.thumbUrl,
+              rotated: true,
+            }
+          : it
+      )
+    );
+    console.log(`🔄 ${item.file.name} — повёрнуто вручную на 90°`);
+  };
+
+  const previewImage = (item) => {
+    window.open(item.thumbUrl, "_blank");
+  };
+
+  const onFinish = async (values) => {
     if (!items.length) return;
-    const total = items.reduce((s, f) => s + f.file.size, 0);
-    if (total > MAX_TOTAL) return msg.error("Размер файлов превышает 20 МБ");
+    const totalSize = items.reduce((sum, it) => sum + it.file.size, 0);
+    if (totalSize > MAX_TOTAL_SIZE) {
+      return msg.error("Размер файлов превышает 20 МБ");
+    }
 
-    const fd = new FormData();
-    items.forEach(({ file }) => fd.append("files", file));
+    const formData = new FormData();
+    items.forEach((it) => formData.append("files", it.file));
 
     setSending(true);
     try {
-      const up = await axios.post(`${server}/api/upload`, fd, {
+      const uploadRes = await axios.post(`${server}/api/upload`, formData, {
         headers: { Authorization: `Bearer ${jwt}` },
       });
 
@@ -135,39 +220,40 @@ export default function ButtonAddStep({
         `${server}/api/steps`,
         {
           data: {
-            name: vals.name,
-            description: vals.description,
+            name: values.name,
+            description: values.description,
             contract: idContract,
-            photos: up.data.map((x) => x.id),
+            photos: uploadRes.data.map((x) => x.id),
           },
         },
-        { headers: { Authorization: `Bearer ${jwt}` } }
+        {
+          headers: { Authorization: `Bearer ${jwt}` },
+        }
       );
 
       setItems([]);
       setOpen(false);
       form.resetFields();
       updateContract();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
       msg.error("Не удалось добавить этап");
     } finally {
       setSending(false);
     }
   };
 
-  /* ─────────────────────────── UI helpers */
+  /* ───────────────────────────────── Thumb component ───────────────────────────────── */
 
   const Thumb = ({ it }) => (
-    <Flex
-      key={it.uid}
-      align="center"
-      justify="space-between"
+    <div
       style={{
+        display: "flex",
+        alignItems: "center",
         border: "1px solid #d9d9d9",
         borderRadius: 6,
-        padding: 6,
-        marginBottom: 6,
+        padding: 8,
+        marginBottom: 8,
       }}
     >
       <img
@@ -181,52 +267,39 @@ export default function ButtonAddStep({
           borderRadius: 4,
         }}
       />
-
-      <span
+      <div
         style={{
           flex: 1,
-          marginLeft: 8,
+          marginLeft: 12,
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
         }}
       >
         {it.file.name}
-      </span>
-
-      <Flex gap={10}>
-        {it.rotated && (
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            auto
-          </Text>
-        )}
-
+      </div>
+      <Space size="small">
         <EyeOutlined
-          style={{ cursor: "pointer" }}
-          onClick={() => window.open(it.thumbUrl)}
+          onClick={() => previewImage(it)}
+          style={{ cursor: "pointer", color: "#555" }}
         />
-
         <RotateRightOutlined
-          style={{ cursor: "pointer" }}
-          onClick={async () => {
-            const upd = await rotateCW(it);
-            setItems((p) => p.map((x) => (x.uid === it.uid ? upd : x)));
-          }}
+          onClick={() => rotateManual(it)}
+          style={{ cursor: "pointer", color: "#555" }}
         />
-
         <DeleteOutlined
-          style={{ cursor: "pointer" }}
-          onClick={() => setItems((p) => p.filter((x) => x.uid !== it.uid))}
+          onClick={() => removeItem(it.uid)}
+          style={{ cursor: "pointer", color: "#ff4d4f" }}
         />
-      </Flex>
-    </Flex>
+      </Space>
+    </div>
   );
 
-  /* ─────────────────────────── render */
+  /* ────────────────────────────────── Render ────────────────────────────────── */
 
   return (
     <>
-      {ctx}
+      {contextHolder}
       <Button
         type="primary"
         disabled={contractCompleted}
@@ -243,18 +316,14 @@ export default function ButtonAddStep({
         onCancel={() => setOpen(false)}
         footer={null}
         destroyOnClose
-        width={650}
+        width={640}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={finish}
-          initialValues={{ name: `Этап №${countSteps + 1}` }}
-        >
+        <Form form={form} layout="vertical" onFinish={onFinish}>
           <Form.Item
             label="Название этапа"
             name="name"
-            rules={[{ required: true, message: "Укажите название" }]}
+            rules={[{ required: true, message: "Укажите название этапа" }]}
+            initialValue={`Этап №${countSteps + 1}`}
           >
             <Input />
           </Form.Item>
@@ -263,33 +332,41 @@ export default function ButtonAddStep({
             <Input.TextArea autoSize />
           </Form.Item>
 
-          {/* ───────────── предупреждение (старый вид) */}
-          <Flex vertical style={{ marginBottom: 8 }}>
+          <div style={{ marginBottom: 12 }}>
             <Text style={{ color: "#999", fontSize: 12 }}>
               Размер файлов суммарно не должен превышать{" "}
-              <span style={{ color: "#8f0000", fontWeight: 600 }}>20МБ</span>
+              <Text style={{ color: "#8f0000", fontWeight: 600 }}>20 МБ</Text>
             </Text>
+            <br />
             <Text style={{ color: "#999", fontSize: 12 }}>
               Допускаются файлы только формата:{" "}
-              <span style={{ color: "#8f0000", fontWeight: 600 }}>jpg,</span>{" "}
-              <span style={{ color: "#8f0000", fontWeight: 600 }}>jpeg,</span>{" "}
-              <span style={{ color: "#8f0000", fontWeight: 600 }}>png</span>
+              <Text style={{ color: "#8f0000", fontWeight: 600 }}>jpg,</Text>{" "}
+              <Text style={{ color: "#8f0000", fontWeight: 600 }}>jpeg,</Text>{" "}
+              <Text style={{ color: "#8f0000", fontWeight: 600 }}>png</Text>
             </Text>
-          </Flex>
+          </div>
 
           <Upload {...uploadProps}>
-            <Button icon={<UploadOutlined />}>Выбрать фотографии</Button>
+            <Button icon={<UploadOutlined />} style={{ marginBottom: 12 }}>
+              Выбрать фотографии
+            </Button>
           </Upload>
 
-          {/* previews */}
-          <div style={{ maxHeight: 220, overflowY: "auto", marginTop: 12 }}>
+          <div
+            style={{
+              maxHeight: 240,
+              overflowY: "auto",
+              marginTop: 8,
+              paddingRight: 4,
+            }}
+          >
             {items.map((it) => (
               <Thumb key={it.uid} it={it} />
             ))}
           </div>
 
           <Popconfirm
-            title="Добавить этап?"
+            title="Отправить этап?"
             okText="Добавить"
             cancelText="Отмена"
             onConfirm={() => form.submit()}
