@@ -22,60 +22,7 @@ import { server } from "../../config";
 const { Text } = Typography;
 
 /**
- * Функция: считать из File первые 64 КБ, распарсить EXIF‐блок и вернуть tag Orientation (1, 3, 6, 8 или -1).
- * @param {File} file
- * @param {(orientation: number) => void} callback
- */
-function getOrientation(file, callback) {
-  const reader = new FileReader();
-  // Читаем 64 КБ (не весь файл, чтобы быстрее)
-  const blob = file.slice(0, 64 * 1024);
-  reader.onload = function (e) {
-    const view = new DataView(e.target.result);
-    // Проверяем JPEG SOI
-    if (view.getUint16(0, false) !== 0xffd8) {
-      return callback(-2);
-    }
-    let length = view.byteLength;
-    let offset = 2;
-    while (offset < length) {
-      const marker = view.getUint16(offset, false);
-      offset += 2;
-      if (marker === 0xffe1) {
-        // APP1 marker найден
-        const exifLength = view.getUint16(offset, false);
-        offset += 2;
-        if (view.getUint32(offset, false) !== 0x45786966) {
-          // “Exif” не найден
-          return callback(-1);
-        }
-        offset += 6;
-        const little = view.getUint16(offset, false) === 0x4949; // II – little endian
-        offset += view.getUint32(offset + 4, little);
-        const tags = view.getUint16(offset, little);
-        offset += 2;
-        for (let i = 0; i < tags; i++) {
-          const tagOffset = offset + i * 12;
-          const tag = view.getUint16(tagOffset, little);
-          if (tag === 0x0112) {
-            // Orientation
-            const orientation = view.getUint16(tagOffset + 8, little);
-            return callback(orientation);
-          }
-        }
-      } else if ((marker & 0xff00) !== 0xff00) {
-        break;
-      } else {
-        offset += view.getUint16(offset, false);
-      }
-    }
-    return callback(-1);
-  };
-  reader.readAsArrayBuffer(blob);
-}
-
-/**
- * Утилита: File → dataURL (для предпросмотра)
+ * Утилита: File → dataURL (для поворота через canvas)
  * @param {File} file
  * @returns {Promise<string>} dataURL
  */
@@ -103,16 +50,13 @@ const rotateImageBlob = async (origDataUrl, origFile, angle) => {
   });
 
   const radians = (angle * Math.PI) / 180;
-  const sin = Math.sin(radians);
-  const cos = Math.cos(radians);
-
-  const w = img.width;
-  const h = img.height;
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
 
   let canvas = document.createElement("canvas");
   let ctx = canvas.getContext("2d");
 
-  // Если угол 90 или 270, надо поменять ширину/высоту canvas
+  // Если угол 90 или 270, меняем размеры canvas
   if (angle === 90 || angle === 270) {
     canvas.width = h;
     canvas.height = w;
@@ -128,7 +72,13 @@ const rotateImageBlob = async (origDataUrl, origFile, angle) => {
   return new Promise((resolve) => {
     canvas.toBlob(
       (blob) => {
-        // Создаём новый File с тем же именем и типом
+        if (!blob) {
+          // Бэкап: если по какой-то причине blob=null, возвращаем исходный файл
+          return resolve({
+            file: origFile,
+            thumbUrl: URL.createObjectURL(origFile),
+          });
+        }
         const rotatedFile = new File([blob], origFile.name, {
           type: origFile.type,
         });
@@ -154,122 +104,67 @@ export default function ButtonAddStep({
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
 
-  /**
-   * items: массив объектов с картинками, которые пользователь добавил:
-   * [{ uid: string, file: File, thumbUrl: string, rotated: boolean }, …]
-   */
+
   const [items, setItems] = useState([]);
 
   const MAX_TOTAL_SIZE = 20 * 1024 * 1024; // 20 МБ
   const ALLOWED_RE = /\.(jpe?g|png)$/i;
 
-  /* ─────────────────────────────── Upload Props ─────────────────────────────── */
 
   const uploadProps = {
     multiple: true,
     accept: ".jpg,.jpeg,.png",
     showUploadList: false,
-    beforeUpload: async (rawFile) => {
+    beforeUpload: (rawFile) => {
       // 1) Проверка формата
       if (!ALLOWED_RE.test(rawFile.name)) {
         msg.error("Допускаются файлы только формата: jpg, jpeg, png");
         return Upload.LIST_IGNORE;
       }
 
-      // 2) Получаем dataURL для превью
-      let dataUrl;
-      try {
-        dataUrl = await fileToDataURL(rawFile);
-      } catch {
-        msg.error("Не удалось прочитать файл");
-        return Upload.LIST_IGNORE;
-      }
+      // 2) Генерируем URL для превью (квадратная миниатюра)
+      const thumbUrl = URL.createObjectURL(rawFile);
+      const uid = crypto.randomUUID();
+      setItems((prev) => [...prev, { uid, file: rawFile, thumbUrl }]);
 
-      // 3) Определяем EXIF-ориентацию
-      getOrientation(rawFile, async (orientation) => {
-        let finalFile = rawFile;
-        let finalThumb = dataUrl;
-        let autoRotated = false;
-
-        if (orientation === 3) {
-          // «вверх ногами» → 180°
-          const { file, thumbUrl } = await rotateImageBlob(
-            dataUrl,
-            rawFile,
-            180
-          );
-          finalFile = file;
-          finalThumb = thumbUrl;
-          autoRotated = true;
-          console.log(`✅ ${rawFile.name} — повёрнуто на 180° (EXIF=3)`);
-        } else if (orientation === 6) {
-          // поворот на 90°
-          const { file, thumbUrl } = await rotateImageBlob(
-            dataUrl,
-            rawFile,
-            90
-          );
-          finalFile = file;
-          finalThumb = thumbUrl;
-          autoRotated = true;
-          console.log(`✅ ${rawFile.name} — повёрнуто на 90° (EXIF=6)`);
-        } else if (orientation === 8) {
-          // поворот на 270°
-          const { file, thumbUrl } = await rotateImageBlob(
-            dataUrl,
-            rawFile,
-            270
-          );
-          finalFile = file;
-          finalThumb = thumbUrl;
-          autoRotated = true;
-          console.log(`✅ ${rawFile.name} — повёрнуто на 270° (EXIF=8)`);
-        } else {
-          // orientation = 1 или неизвестно → не трогаем
-        }
-
-        // 4) Добавляем в items
-        const uid = crypto.randomUUID();
-        setItems((prev) => [
-          ...prev,
-          { uid, file: finalFile, thumbUrl: finalThumb, rotated: autoRotated },
-        ]);
-      });
-
-      // Ант Upload не добавляет автоматически, поэтому возвращаем LIST_IGNORE
+      // Ант Upload: не добавляем rawFile в свой собственный список
       return Upload.LIST_IGNORE;
     },
   };
 
-  /* ─────────────────────── Показать/удалить/повернуть/предпросмотр ─────────────────────── */
-
   // Ручной поворот на +90°
   const rotateManual = async (it) => {
+    // Сначала получаем dataURL из текущего File
+    let dataUrl;
+    try {
+      dataUrl = await fileToDataURL(it.file);
+    } catch {
+      msg.error("Не удалось прочитать файл для поворота");
+      return;
+    }
+
     const { file: newFile, thumbUrl: newThumb } = await rotateImageBlob(
-      it.thumbUrl,
+      dataUrl,
       it.file,
       90
     );
     console.log(`🔄 ${it.file.name} — повёрнуто вручную на 90°`);
     setItems((prev) =>
       prev.map((x) =>
-        x.uid === it.uid
-          ? { uid: x.uid, file: newFile, thumbUrl: newThumb, rotated: true }
-          : x
+        x.uid === it.uid ? { uid: x.uid, file: newFile, thumbUrl: newThumb } : x
       )
     );
   };
 
-  // Удалить файл
+  // Удалить миниатюру
   const removeItem = (uid) => {
     setItems((prev) => prev.filter((x) => x.uid !== uid));
   };
 
-  // Предпросмотр полного размера в новой вкладке
+  // Предпросмотр полноразмерного изображения в новой вкладке
   const previewImage = (it) => {
     window.open(it.thumbUrl, "_blank");
   };
-
 
   const onFinish = async (values) => {
     if (!items.length) return;
@@ -285,12 +180,12 @@ export default function ButtonAddStep({
 
     setSending(true);
     try {
-      // 1) Загрузка на сервер
+      // 1) Загрузка файлов на сервер
       const uploadRes = await axios.post(`${server}/api/upload`, formData, {
         headers: { Authorization: `Bearer ${jwt}` },
       });
 
-      // 2) Создаём шаг (шаг → фото IDs из uploadRes)
+      // 2) Создаём новый шаг
       await axios.post(
         `${server}/api/steps`,
         {
@@ -306,7 +201,6 @@ export default function ButtonAddStep({
         }
       );
 
-      // Сброс состояния
       setItems([]);
       setOpen(false);
       form.resetFields();
@@ -318,7 +212,6 @@ export default function ButtonAddStep({
       setSending(false);
     }
   };
-
 
   const MiniThumb = ({ it }) => (
     <div
@@ -412,15 +305,13 @@ export default function ButtonAddStep({
           {/* Информация о лимитах */}
           <div style={{ marginBottom: 12 }}>
             <Text style={{ color: "#999", fontSize: 12 }}>
-              Размер файлов суммарно не должен превышать
+              Размер файлов суммарно не должен превышать{" "}
               <Text style={{ color: "#8f0000", fontWeight: 600 }}>20 МБ</Text>
             </Text>
             <br />
             <Text style={{ color: "#999", fontSize: 12 }}>
-              Допускаются файлы только формата:
-              <Text style={{ color: "#8f0000", fontWeight: 600 }}>
-                jpg,
-              </Text>{" "}
+              Допускаются файлы только формата:{" "}
+              <Text style={{ color: "#8f0000", fontWeight: 600 }}>jpg,</Text>{" "}
               <Text style={{ color: "#8f0000", fontWeight: 600 }}>jpeg,</Text>{" "}
               <Text style={{ color: "#8f0000", fontWeight: 600 }}>png</Text>
             </Text>
