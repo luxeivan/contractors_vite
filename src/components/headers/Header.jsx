@@ -128,7 +128,7 @@ export default function Header() {
               </p>
               <Link
                 target="_blank"
-                to={`${server}/uploads/Rukovodstvo_polzovatelya_servisa_fotootchety_v1_dbc578d635.pdf`}
+                to={`${server}/uploads/Rukovodstvo_polzovatelya_servisa_Mosoblenergo_fotootchety_fbc0d611d0.pdf`}
               >
                 <QuestionCircleOutlined style={{ fontSize: 20 }} />
               </Link>
