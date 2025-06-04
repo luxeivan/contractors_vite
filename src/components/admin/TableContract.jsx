@@ -229,7 +229,10 @@ export default function TableContract() {
   };
 
   useEffect(() => {
-    fetching(defaultPageSize, defaultPage);
+    fetching(
+      pagination?.pageSize || defaultPageSize,
+      pagination?.current || defaultPage
+    );
     return () => debouncedTask.cancel();
   }, [
     selectedContractor,
