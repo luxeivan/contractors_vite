@@ -7,120 +7,210 @@ import {
   Table,
   Space,
   Flex,
-  Switch,
   Button,
-  Modal,
   Tag,
   Select,
   Tooltip,
   Input,
-  Checkbox,
+  Modal,
+  Typography,
 } from "antd";
 import { debounce } from "lodash";
-import Text from "antd/es/typography/Text";
 import React, { useEffect, useState, useMemo } from "react";
+import { ReloadOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import axios from "axios";
+import useAuth from "../../store/authStore";
+import { server } from "../../config";
+
 import ModalViewContract from "./ModalViewContract";
 import ModalAddContract from "./ModalAddContract";
 import CommentDrawer from "./CommentDrawer";
-import { ReloadOutlined } from "@ant-design/icons";
-import useAuth from "../../store/authStore";
-import { server } from "../../config";
-import dayjs from "dayjs";
-import axios from "axios";
+
+const { Text } = Typography;
+
 const defaultPageSize = 10;
 const defaultPage = 1;
 
 export default function TableContract() {
   const { user } = useAuth((store) => store);
+
+  // ─────────────── state ───────────────
   const [pagination, setPagination] = useState();
   const [allContracts, setAllContracts] = useState();
-  const [allPurposes, setAllPurposes] = useState();
+  const [allPurposes, setAllPurposes] = useState([]);
+  const [listContractors, setListContractors] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // модалки / drawer
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isOpenModalAddContract, setIsOpenModalAddContract] = useState(false);
   const [docIdForModal, setDocIdForModal] = useState(null);
-  const [onlyAtWork, setOnlyAtWork] = useState(0);
-  const [listContractors, setListContractors] = useState(null);
-  const [selectedContractor, setSelectedContractor] = useState(null);
-  const [selectedPurpose, setSelectedPurpose] = useState(null);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [commentContract, setCommentContract] = useState(null);
   const [commentsCount, setCommentsCount] = useState({});
 
+  // фильтры
+  const [onlyAtWork, setOnlyAtWork] = useState(0);
+  const [selectedPurpose, setSelectedPurpose] = useState(null);
+  const [selectedContractor, setSelectedContractor] = useState(null);
   const [searchTask, setSearchTask] = useState("");
+  const [stepsFilter, setStepsFilter] = useState(null);
   const debouncedTask = useMemo(
     () => debounce((v) => setSearchTask(v.trim()), 500),
     []
   );
-  const [onlyZeroSteps, setOnlyZeroSteps] = useState(false);
 
-  const fetching = async (pageSize = defaultPageSize, page = defaultPage) => {
+  // ─────────────── Помощники для загрузки данных ───────────────
+
+  // получить список назначений (purpose)
+  const fetchPurposes = async () => {
+    try {
+      const res = await getAllPurposes(100, 1);
+      let temp = res.data
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((item) => ({
+          value: item.id,
+          label: item.name,
+        }));
+      temp.unshift({ value: null, label: "Все" });
+      setAllPurposes(temp);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // получить список подрядчиков
+  const fetchContractors = async () => {
+    try {
+      const res = await getAllContractors(1000, 1);
+      let temp = res.data
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((item) => ({
+          value: item.id,
+          label: item.name,
+        }));
+      temp.unshift({ value: null, label: "Все" });
+      setListContractors(temp);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  /**
+   * Загрузка договоров с учётом фильтров.
+   * Если применён фильтр searchTask или stepsFilter, грузим все страницы и объединяем.
+   * Иначе – постранично.
+   */
+
+  const fetchContracts = async (
+    pageSize = defaultPageSize,
+    page = defaultPage
+  ) => {
     try {
       setLoading(true);
 
-      // ─── ВСПОМОГАТ. ФУНКЦИЯ ────────────────────────────────────
+      // вспомогательная функция – получить «кубик» с заданной страницы
       const fetchChunk = (p) =>
         getAllContracts(100, p, {
-          contractorId: selectedContractor,
-          completed: onlyAtWork,
-          purposeId: selectedPurpose,
+          contractorId: selectedContractor || undefined,
+          completed:
+            onlyAtWork === 2 ? true : onlyAtWork === 1 ? false : undefined,
+          purposeId: selectedPurpose || undefined,
         });
 
-      let temp;
+      let tempResp;
 
-      if (onlyZeroSteps || searchTask) {
-        // 1-я страница — узнаём, сколько всего
+      // если есть поиск по тех. заданию или фильтр по наличию этапов – забираем все данные сразу
+      if (searchTask || stepsFilter !== null) {
         const first = await fetchChunk(1);
         const pageCount = first.meta.pagination.pageCount;
 
-        // если страниц > 1 — тащим остальные параллельно
         if (pageCount > 1) {
           const rest = await Promise.all(
             Array.from({ length: pageCount - 1 }, (_, i) => fetchChunk(i + 2))
           );
           first.data.push(...rest.flatMap((r) => r.data));
         }
-        temp = first;
+        tempResp = first;
       } else {
-        // обычный режим (постраничная загрузка)
-        temp = await getAllContracts(pageSize, page, {
-          contractorId: selectedContractor,
-          completed: onlyAtWork,
-          purposeId: selectedPurpose,
+        // обычный постраничный режим
+        tempResp = await getAllContracts(pageSize, page, {
+          contractorId: selectedContractor || undefined,
+          completed:
+            onlyAtWork === 2 ? true : onlyAtWork === 1 ? false : undefined,
+          purposeId: selectedPurpose || undefined,
         });
       }
 
-      // ─── ФИЛЬТРЫ ------------------------------------------------
-      let filtered = temp.data;
+      // ─── ВСТАВЬТЕ СЮДА ОТЛАДОЧНЫЕ ЛОГИ ─────────────────────────────────────
+      console.groupCollapsed("🔍 fetchContracts debug");
+      console.log(
+        "➤ total из Strapi (до локальных фильтров):",
+        tempResp.meta.pagination.total
+      );
+      console.log(
+        "➤ количество записей в tempResp.data:",
+        tempResp.data.length
+      );
+      console.log(
+        "➤ первые 10 ID (tempResp.data):",
+        tempResp.data.slice(0, 10).map((c) => c.id)
+      );
+      console.log(
+        "➤ последние 10 ID (tempResp.data):",
+        tempResp.data.slice(-10).map((c) => c.id)
+      );
+      console.groupEnd();
+      // ────────────────────────────────────────────────────────────────────────
 
+      let filtered = tempResp.data;
+
+      // фильтр по номерам тех. задания
       if (searchTask) {
         filtered = filtered.filter((c) =>
           (c.numberTask || "").toLowerCase().includes(searchTask.toLowerCase())
         );
       }
 
-      if (onlyZeroSteps) {
+      // фильтр по наличию этапов
+      if (stepsFilter === "zero") {
         filtered = filtered.filter((c) => (c.steps?.length || 0) === 0);
+      } else if (stepsFilter === "nonzero") {
+        filtered = filtered.filter((c) => (c.steps?.length || 0) > 0);
       }
 
-      // ─── ПАТЧИМ METADATA, если фильтровали ----------------------
+      // ЕЩЁ ЛОГ: сколько осталось в filtered после фильтров
+      console.groupCollapsed("🔍 После локальных фильтров");
+      console.log("➤ filtered.length:", filtered.length);
+      console.log(
+        "➤ ID после фильтрации (первые 10):",
+        filtered.slice(0, 10).map((c) => c.id)
+      );
+      console.log(
+        "➤ ID после фильтрации (последние 10):",
+        filtered.slice(-10).map((c) => c.id)
+      );
+      console.groupEnd();
+
+      // если были фильтры – «патчим» meta, чтобы пагинация отрисовывала корректно
       const patched =
-        searchTask || onlyZeroSteps
+        searchTask || stepsFilter !== null
           ? {
-              ...temp,
+              ...tempResp,
               data: filtered,
               meta: {
-                ...temp.meta,
+                ...tempResp.meta,
                 pagination: {
-                  ...temp.meta.pagination,
+                  ...tempResp.meta.pagination,
                   total: filtered.length,
                   pageCount: Math.ceil(
-                    filtered.length / temp.meta.pagination.pageSize
+                    filtered.length / tempResp.meta.pagination.pageSize
                   ),
                 },
               },
             }
-          : temp;
+          : tempResp;
 
       setAllContracts(patched);
     } catch (e) {
@@ -130,127 +220,11 @@ export default function TableContract() {
     }
   };
 
-  // const fetching = async (pageSize = defaultPageSize, page = defaultPage) => {
-  //   try {
-  //     setLoading(true);
-
-  //     const temp = await getAllContracts(pageSize, page, {
-  //       contractorId: selectedContractor,
-  //       completed: onlyAtWork,
-  //       purposeId: selectedPurpose,
-  //     });
-
-  //     let filtered = searchTask
-  //       ? temp.data.filter((c) =>
-  //           (c.numberTask || "")
-  //             .toLowerCase()
-  //             .includes(searchTask.toLowerCase())
-  //         )
-  //       : temp.data;
-  //     if (onlyZeroSteps) {
-  //       filtered = filtered.filter((c) => (c.steps?.length || 0) === 0);
-  //     }
-
-  //     const patched =
-  //       searchTask || onlyZeroSteps
-  //         ? {
-  //             ...temp,
-  //             data: filtered,
-  //             meta: {
-  //               ...temp.meta,
-  //               pagination: {
-  //                 ...temp.meta.pagination,
-  //                 total: filtered.length,
-  //                 pageCount: Math.ceil(
-  //                   filtered.length / temp.meta.pagination.pageSize
-  //                 ),
-  //               },
-  //             },
-  //           }
-  //         : temp;
-
-  //     setAllContracts(patched);
-  //   } catch (e) {
-  //     console.error(e);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  const fetchPurposes = async () => {
-    try {
-      const res = await getAllPurposes(100, 1);
-
-      let temp = res?.data
-        ?.sort((a, b) => {
-          const nameA = a.name.toLowerCase();
-          const nameB = b.name.toLowerCase();
-          if (nameA < nameB) return -1;
-          if (nameA > nameB) return 1;
-          return 0;
-        })
-        .map((item) => ({
-          value: item.id,
-          label: item.name,
-        }));
-      temp.unshift({
-        value: false,
-        label: "Все",
-      });
-      setAllPurposes(temp);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchingContractors = async (defaultPageSize, defaultPage) => {
-    try {
-      const res = await getAllContractors(defaultPageSize, defaultPage);
-      let temp = res?.data
-        ?.sort((a, b) => {
-          const nameA = a.name.toLowerCase();
-          const nameB = b.name.toLowerCase();
-          if (nameA < nameB) return -1;
-          if (nameA > nameB) return 1;
-          return 0;
-        })
-        .map((item) => ({
-          value: item.id,
-          label: item.name,
-        }));
-      temp.unshift({
-        value: false,
-        label: "Все",
-      });
-      setListContractors(temp);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+  // загрузка комментариев (количество) для каждой записи
   useEffect(() => {
-    fetching(
-      pagination?.pageSize || defaultPageSize,
-      pagination?.current || defaultPage
-    );
-    return () => debouncedTask.cancel();
-  }, [
-    selectedContractor,
-    onlyAtWork,
-    selectedPurpose,
-    searchTask,
-    onlyZeroSteps,
-  ]);
+    if (!allContracts?.data) return;
 
-  useEffect(() => {
-    fetchPurposes();
-    fetchingContractors(100, 1);
-  }, []);
-
-  useEffect(() => {
     const fetchCommentsCount = async () => {
-      if (!allContracts?.data) return;
-
       const counts = {};
       const jwt = localStorage.getItem("jwt");
 
@@ -264,7 +238,7 @@ export default function TableContract() {
               }
             );
             counts[contract.id] = res.data.meta?.pagination?.total || 0;
-          } catch (error) {
+          } catch {
             counts[contract.id] = 0;
           }
         })
@@ -276,18 +250,41 @@ export default function TableContract() {
     fetchCommentsCount();
   }, [allContracts]);
 
+  // ─────────────── эффекты загрузки ───────────────
+
+  // при изменении фильтров (кроме подрядчика/назначения/статуса/поиска/этапов)
+  useEffect(() => {
+    fetchContracts(
+      pagination?.pageSize || defaultPageSize,
+      pagination?.current || defaultPage
+    );
+    return () => debouncedTask.cancel();
+  }, [
+    selectedContractor,
+    onlyAtWork,
+    selectedPurpose,
+    searchTask,
+    stepsFilter,
+  ]);
+
+  // один раз – загрузка списка подрядчиков + списка назначений
+  useEffect(() => {
+    fetchPurposes();
+    fetchContractors();
+  }, []);
+
+  // ─────────────── колонки таблицы ───────────────
   const columns = [
     {
       title: "Номер договора",
       dataIndex: "number",
       key: "number",
-      render: (text) => <span>{text}</span>,
     },
     {
       title: "Дата договора",
       dataIndex: "dateContract",
       key: "dateContract",
-      render: (text) => <span>{dayjs(text).format("DD.MM.YYYY")}</span>,
+      render: (d) => <span>{dayjs(d).format("DD.MM.YYYY")}</span>,
     },
     {
       title: "Предмет договора",
@@ -298,26 +295,22 @@ export default function TableContract() {
       title: "Номер Тех.Задания",
       dataIndex: "numberTask",
       key: "numberTask",
-      render: (text) => <span>{text}</span>,
     },
     {
       title: "Назначение",
       dataIndex: "purpose",
       key: "purpose",
-      render: (purpose) =>
-        purpose ? <Tag color={purpose.color}>{purpose.name}</Tag> : false,
+      render: (p) => (p ? <Tag color={p.color}>{p.name}</Tag> : "-"),
     },
     {
-      title: "Количество выполненых этапов",
+      title: "Кол-во выполненных этапов",
       dataIndex: "stepsComplited",
       key: "stepsComplited",
-      render: (text) => <span>{text}</span>,
     },
     {
       title: "Подрядчик",
       dataIndex: "contractor",
       key: "contractor",
-      render: (text) => <span>{text}</span>,
     },
     {
       title: "Статус",
@@ -325,12 +318,15 @@ export default function TableContract() {
       key: "status",
       render: (completed) =>
         completed ? (
-          <Tag color={"volcano"}>Архивный</Tag>
+          <Tag color="volcano">Архивный</Tag>
         ) : (
-          <Tag color={"green"}>В работе</Tag>
+          <Tag color="green">В работе</Tag>
         ),
     },
-    {
+  ];
+
+  if (user?.role?.type !== "readadmin") {
+    columns.push({
       title: "Действия",
       key: "action",
       render: (_, record) => (
@@ -350,31 +346,10 @@ export default function TableContract() {
           </Space>
         </>
       ),
-    },
+    });
+  }
 
-    // {
-    //   title: "Действия",
-    //   key: "action",
-    //   render: (_, record) => (
-    //     <>
-    //       <Space size="middle">
-    //         <a onClick={() => openModal(record.documentId)}>Открыть договор</a>
-    //       </Space>
-    //       <Space size="middle">
-    //         <a
-    //           onClick={() => {
-    //             setCommentContract(record);
-    //             setIsCommentsOpen(true);
-    //           }}
-    //         >
-    //           Комментарии
-    //         </a>
-    //       </Space>
-    //     </>
-    //   ),
-    // },
-  ];
-
+  // ─────────────── подготовка данных для таблицы ───────────────
   const data = allContracts?.data?.map((item) => ({
     key: item.id,
     id: item.id,
@@ -382,181 +357,186 @@ export default function TableContract() {
     number: item.number,
     dateContract: item.dateContract,
     description: item.description,
-    contractor: item.contractor?.name,
+    contractor: item.contractor?.name || "-",
     numberTask: item.numberTask,
-    status: item.completed,
     purpose: item.purpose,
-    stepsComplited: item.steps?.length,
-    contractor_inn_kpp: `${item.contractor?.inn}/${item.contractor?.kpp}`,
+    stepsComplited: item.steps?.length || 0,
+    status: item.completed,
   }));
 
-  const handlerReload = async () => {
-    if (pagination) {
-      fetching(pagination.pageSize, pagination.current);
-    } else {
-      fetching(defaultPageSize, defaultPage);
-    }
+  // ─────────────── обработчики ───────────────
+  const handlerReload = () => {
+    setSelectedContractor(null);
+    setOnlyAtWork(0);
+    setSelectedPurpose(null);
+    setSearchTask("");
+    setStepsFilter(null);
+    fetchContracts(defaultPageSize, defaultPage);
   };
-  const handlerChange = async (pagination) => {
-    // console.log("pagination", pagination);
-    setPagination(pagination);
-    fetching(pagination.pageSize, pagination.current);
+
+  const handlerChange = (pag) => {
+    setPagination(pag);
+    fetchContracts(pag.pageSize, pag.current);
   };
-  const handlerAddNewContract = async () => {
-    // console.log('Добавить новый объект');
+
+  const handlerAddNewContract = () => {
     setIsOpenModalAddContract(true);
   };
-  const openModal = async (documentId) => {
-    setDocIdForModal(documentId);
+
+  const openModal = (docId) => {
+    setDocIdForModal(docId);
     setIsOpenModal(true);
   };
-  const closeModal = async () => {
+
+  const closeModal = () => {
     setDocIdForModal(null);
     setIsOpenModal(false);
   };
-  const closeModalAddContract = async () => {
+
+  const closeAddModal = () => {
     setIsOpenModalAddContract(false);
   };
 
+  // ─────────────── JSX ───────────────
   return (
-    <div>
-      <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
-        <Flex gap={20} align="center">
-          <Flex gap={10} align="center">
+    <>
+      {/* ─────────────── ФИЛЬТРЫ (две строки) ─────────────── */}
+      {/* Первая строка фильтров */}
+      <Flex justify="space-between" align="middle" style={{ marginBottom: 12 }}>
+        <Space size="middle" align="center">
+          {/* Статус */}
+          <Space align="center">
             <Text>Статус:</Text>
             <Select
-              defaultValue={0}
+              value={onlyAtWork}
+              style={{ width: 140 }}
+              onChange={(val) => setOnlyAtWork(val)}
               options={[
-                {
-                  value: 0,
-                  label: "Все",
-                },
-                {
-                  value: 1,
-                  label: "В работе",
-                },
-                {
-                  value: 2,
-                  label: "Архивный",
-                },
+                { value: 0, label: "Все" },
+                { value: 1, label: "В работе" },
+                { value: 2, label: "Архивный" },
               ]}
-              style={{ width: 150 }}
-              onChange={(value) => {
-                setOnlyAtWork(value);
-              }}
             />
-          </Flex>
-          <Flex gap={10} align="center">
-            <Text>Назначение:</Text>
-            {allPurposes && (
-              <Select
-                defaultValue="Все"
-                style={{ width: 150 }}
-                onChange={(value) => {
-                  setSelectedPurpose(value);
-                }}
-                options={allPurposes}
-              />
-            )}
-          </Flex>
+          </Space>
 
+          {/* Назначение */}
+          <Space align="center">
+            <Text>Назначение:</Text>
+            <Select
+              value={selectedPurpose}
+              style={{ width: 180 }}
+              onChange={(val) => setSelectedPurpose(val)}
+              options={allPurposes}
+            />
+          </Space>
+
+          {/* Поиск по № Тех.Задания */}
           <Input
-            placeholder="Поиск по № Тех.-задания"
+            placeholder="Поиск по № Тех.Задания"
             allowClear
-            style={{ width: 215 }}
+            style={{ width: 220 }}
             onChange={(e) => debouncedTask(e.target.value)}
           />
+        </Space>
 
-          <Checkbox
-            checked={onlyZeroSteps}
-            onChange={(e) => setOnlyZeroSteps(e.target.checked)}
-          >
-            0&nbsp;этапов
-          </Checkbox>
-
-          <Flex gap={10} align="center">
-            <Text>Подрядчик:</Text>
-            {listContractors && (
-              <Select
-                defaultValue="Все"
-                style={{ width: 300 }}
-                onChange={(value) => {
-                  setSelectedContractor(value);
-                }}
-                options={listContractors}
-                showSearch={true}
-                optionFilterProp="label"
-              />
-            )}
-          </Flex>
-        </Flex>
-        <Flex gap={20} align="center">
-          <Tooltip title="Обновить">
+        <Space size="middle" align="center">
+          <Tooltip title="Сброс фильтров">
             <a onClick={handlerReload}>
-              <ReloadOutlined />
+              <ReloadOutlined style={{ fontSize: 18 }} />
             </a>
           </Tooltip>
           {user?.role?.type !== "readadmin" && (
-            <Button onClick={handlerAddNewContract} type="primary">
+            <Button type="primary" onClick={handlerAddNewContract}>
               Добавить новый договор
             </Button>
           )}
-        </Flex>
+        </Space>
       </Flex>
+
+      {/* Вторая строка фильтров */}
+      <Flex justify="flex-start" align="middle" style={{ marginBottom: 20 }}>
+        <Space size="middle" align="center">
+          {/* Наличие этапов */}
+          <Space align="center">
+            <Text>Наличие этапов:</Text>
+            <Select
+              value={stepsFilter}
+              style={{ width: 160 }}
+              onChange={(val) => setStepsFilter(val)}
+              options={[
+                { value: null, label: "Все" },
+                { value: "zero", label: "0 этапов" },
+                { value: "nonzero", label: "> 0 этапов" },
+              ]}
+            />
+          </Space>
+
+          {/* Подрядчик */}
+          <Space align="center">
+            <Text>Подрядчик:</Text>
+            <Select
+              value={selectedContractor}
+              showSearch
+              optionFilterProp="label"
+              style={{ width: 260 }}
+              placeholder="Выберите подрядчика"
+              onChange={(val) => setSelectedContractor(val)}
+              options={listContractors}
+            />
+          </Space>
+        </Space>
+      </Flex>
+
+      {/* ─────────────── Таблица ─────────────── */}
       <Table
         columns={columns}
         dataSource={data}
+        loading={loading}
+        style={{ width: "100%" }}
         pagination={{
-          pageSizeOptions: [10, 25, 50, 100],
-          showSizeChanger: {
-            options: [
-              {
-                value: defaultPageSize,
-                label: defaultPageSize + " / на странице",
-              },
-              { value: 25, label: 25 + " / на странице" },
-              { value: 50, label: 50 + " / на странице" },
-              { value: 100, label: 100 + " / на странице" },
-            ],
-          },
-          defaultPageSize: defaultPageSize,
-          defaultCurrent: defaultPage,
+          current: pagination?.current || defaultPage,
+          pageSize: pagination?.pageSize || defaultPageSize,
+          total: allContracts?.meta?.pagination?.total || 0,
+          showSizeChanger: true,
+          pageSizeOptions: ["10", "25", "50", "100"],
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} из ${total} всего`,
-          total:
-            allContracts?.data?.length > 0
-              ? allContracts.meta.pagination.total
-              : 0,
+          onChange: handlerChange,
           align: "center",
         }}
         onChange={handlerChange}
-        loading={loading}
       />
+
+      {/* ─────────────── Модалка «Просмотр договора» ─────────────── */}
       <ModalViewContract
         isOpenModal={isOpenModal}
         closeModal={closeModal}
         docIdForModal={docIdForModal}
         update={handlerReload}
       />
+
+      {/* ─────────────── Модалка «Добавление договора» ─────────────── */}
       <Modal
         title="Добавление нового договора"
         open={isOpenModalAddContract}
-        onCancel={closeModalAddContract}
-        footer={false}
+        onCancel={closeAddModal}
+        footer={null}
+        destroyOnClose
       >
         <ModalAddContract
           isOpenModalAddContract={isOpenModalAddContract}
-          closeModalAddContract={closeModalAddContract}
+          closeModalAddContract={closeAddModal}
           update={handlerReload}
         />
       </Modal>
 
+      {/* ─────────────── Drawer «Комментарии» ─────────────── */}
       <CommentDrawer
         open={isCommentsOpen}
         onClose={() => setIsCommentsOpen(false)}
         contract={commentContract}
       />
-    </div>
+    </>
   );
 }
 
@@ -576,6 +556,7 @@ export default function TableContract() {
 //   Select,
 //   Tooltip,
 //   Input,
+//   Checkbox,
 // } from "antd";
 // import { debounce } from "lodash";
 // import Text from "antd/es/typography/Text";
@@ -613,41 +594,75 @@ export default function TableContract() {
 //     () => debounce((v) => setSearchTask(v.trim()), 500),
 //     []
 //   );
+//   const [onlyZeroSteps, setOnlyZeroSteps] = useState(false);
 
 //   const fetching = async (pageSize = defaultPageSize, page = defaultPage) => {
 //     try {
 //       setLoading(true);
 
-//       const temp = await getAllContracts(pageSize, page, {
-//         contractorId: selectedContractor,
-//         completed: onlyAtWork,
-//         purposeId: selectedPurpose,
-//       });
+//       // ─── ВСПОМОГАТ. ФУНКЦИЯ ────────────────────────────────────
+//       const fetchChunk = (p) =>
+//         getAllContracts(100, p, {
+//           contractorId: selectedContractor,
+//           completed: onlyAtWork,
+//           purposeId: selectedPurpose,
+//         });
 
-//       const filtered = searchTask
-//         ? temp.data.filter((c) =>
-//             (c.numberTask || "")
-//               .toLowerCase()
-//               .includes(searchTask.toLowerCase())
-//           )
-//         : temp.data;
+//       let temp;
 
-//       const patched = searchTask
-//         ? {
-//             ...temp,
-//             data: filtered,
-//             meta: {
-//               ...temp.meta,
-//               pagination: {
-//                 ...temp.meta.pagination,
-//                 total: filtered.length,
-//                 pageCount: Math.ceil(
-//                   filtered.length / temp.meta.pagination.pageSize
-//                 ),
+//       if (onlyZeroSteps || searchTask) {
+//         // 1-я страница — узнаём, сколько всего
+//         const first = await fetchChunk(1);
+//         const pageCount = first.meta.pagination.pageCount;
+
+//         // если страниц > 1 — тащим остальные параллельно
+//         if (pageCount > 1) {
+//           const rest = await Promise.all(
+//             Array.from({ length: pageCount - 1 }, (_, i) => fetchChunk(i + 2))
+//           );
+//           first.data.push(...rest.flatMap((r) => r.data));
+//         }
+//         temp = first;
+//       } else {
+//         // обычный режим (постраничная загрузка)
+//         temp = await getAllContracts(pageSize, page, {
+//           contractorId: selectedContractor,
+//           completed: onlyAtWork,
+//           purposeId: selectedPurpose,
+//         });
+//       }
+
+//       // ─── ФИЛЬТРЫ ------------------------------------------------
+//       let filtered = temp.data;
+
+//       if (searchTask) {
+//         filtered = filtered.filter((c) =>
+//           (c.numberTask || "").toLowerCase().includes(searchTask.toLowerCase())
+//         );
+//       }
+
+//       if (onlyZeroSteps) {
+//         filtered = filtered.filter((c) => (c.steps?.length || 0) === 0);
+//       }
+
+//       // ─── ПАТЧИМ METADATA, если фильтровали ----------------------
+//       const patched =
+//         searchTask || onlyZeroSteps
+//           ? {
+//               ...temp,
+//               data: filtered,
+//               meta: {
+//                 ...temp.meta,
+//                 pagination: {
+//                   ...temp.meta.pagination,
+//                   total: filtered.length,
+//                   pageCount: Math.ceil(
+//                     filtered.length / temp.meta.pagination.pageSize
+//                   ),
+//                 },
 //               },
-//             },
-//           }
-//         : temp;
+//             }
+//           : temp;
 
 //       setAllContracts(patched);
 //     } catch (e) {
@@ -656,6 +671,53 @@ export default function TableContract() {
 //       setLoading(false);
 //     }
 //   };
+
+//   // const fetching = async (pageSize = defaultPageSize, page = defaultPage) => {
+//   //   try {
+//   //     setLoading(true);
+
+//   //     const temp = await getAllContracts(pageSize, page, {
+//   //       contractorId: selectedContractor,
+//   //       completed: onlyAtWork,
+//   //       purposeId: selectedPurpose,
+//   //     });
+
+//   //     let filtered = searchTask
+//   //       ? temp.data.filter((c) =>
+//   //           (c.numberTask || "")
+//   //             .toLowerCase()
+//   //             .includes(searchTask.toLowerCase())
+//   //         )
+//   //       : temp.data;
+//   //     if (onlyZeroSteps) {
+//   //       filtered = filtered.filter((c) => (c.steps?.length || 0) === 0);
+//   //     }
+
+//   //     const patched =
+//   //       searchTask || onlyZeroSteps
+//   //         ? {
+//   //             ...temp,
+//   //             data: filtered,
+//   //             meta: {
+//   //               ...temp.meta,
+//   //               pagination: {
+//   //                 ...temp.meta.pagination,
+//   //                 total: filtered.length,
+//   //                 pageCount: Math.ceil(
+//   //                   filtered.length / temp.meta.pagination.pageSize
+//   //                 ),
+//   //               },
+//   //             },
+//   //           }
+//   //         : temp;
+
+//   //     setAllContracts(patched);
+//   //   } catch (e) {
+//   //     console.error(e);
+//   //   } finally {
+//   //     setLoading(false);
+//   //   }
+//   // };
 
 //   const fetchPurposes = async () => {
 //     try {
@@ -682,6 +744,7 @@ export default function TableContract() {
 //       console.log(error);
 //     }
 //   };
+
 //   const fetchingContractors = async (defaultPageSize, defaultPage) => {
 //     try {
 //       const res = await getAllContractors(defaultPageSize, defaultPage);
@@ -708,9 +771,18 @@ export default function TableContract() {
 //   };
 
 //   useEffect(() => {
-//     fetching(defaultPageSize, defaultPage);
+//     fetching(
+//       pagination?.pageSize || defaultPageSize,
+//       pagination?.current || defaultPage
+//     );
 //     return () => debouncedTask.cancel();
-//   }, [selectedContractor, onlyAtWork, selectedPurpose, searchTask]);
+//   }, [
+//     selectedContractor,
+//     onlyAtWork,
+//     selectedPurpose,
+//     searchTask,
+//     onlyZeroSteps,
+//   ]);
 
 //   useEffect(() => {
 //     fetchPurposes();
@@ -844,6 +916,7 @@ export default function TableContract() {
 //     //   ),
 //     // },
 //   ];
+
 //   const data = allContracts?.data?.map((item) => ({
 //     key: item.id,
 //     id: item.id,
@@ -936,12 +1009,12 @@ export default function TableContract() {
 //             onChange={(e) => debouncedTask(e.target.value)}
 //           />
 
-//           <Input
-//             placeholder="Поиск по Этапу"
-//             allowClear
-//             style={{ width: 215 }}
-//             //Вот тут правим
-//           />
+//           <Checkbox
+//             checked={onlyZeroSteps}
+//             onChange={(e) => setOnlyZeroSteps(e.target.checked)}
+//           >
+//             0&nbsp;этапов
+//           </Checkbox>
 
 //           <Flex gap={10} align="center">
 //             <Text>Подрядчик:</Text>
