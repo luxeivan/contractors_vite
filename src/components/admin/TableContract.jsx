@@ -50,7 +50,6 @@ export default function TableContract() {
   const [commentContract, setCommentContract] = useState(null);
   const [commentsCount, setCommentsCount] = useState({});
 
-  // фильтры
   const [onlyAtWork, setOnlyAtWork] = useState(0);
   const [selectedPurpose, setSelectedPurpose] = useState(null);
   const [selectedContractor, setSelectedContractor] = useState(null);
@@ -61,13 +60,11 @@ export default function TableContract() {
     []
   );
 
-  // ─────────────── Помощники для загрузки данных ───────────────
-
-  // получить список назначений (purpose)
+  // 1) Загрузить список назначений (purpose)
   const fetchPurposes = async () => {
     try {
       const res = await getAllPurposes(100, 1);
-      let temp = res.data
+      const temp = res.data
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((item) => ({
           value: item.id,
@@ -76,15 +73,15 @@ export default function TableContract() {
       temp.unshift({ value: null, label: "Все" });
       setAllPurposes(temp);
     } catch (error) {
-      console.error(error);
+      console.error("fetchPurposes error:", error);
     }
   };
 
-  // получить список подрядчиков
+  // 2) Загрузить список подрядчиков (contractor)
   const fetchContractors = async () => {
     try {
       const res = await getAllContractors(1000, 1);
-      let temp = res.data
+      const temp = res.data
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((item) => ({
           value: item.id,
@@ -93,15 +90,9 @@ export default function TableContract() {
       temp.unshift({ value: null, label: "Все" });
       setListContractors(temp);
     } catch (error) {
-      console.error(error);
+      console.error("fetchContractors error:", error);
     }
   };
-
-  /**
-   * Загрузка договоров с учётом фильтров.
-   * Если применён фильтр searchTask или stepsFilter, грузим все страницы и объединяем.
-   * Иначе – постранично.
-   */
 
   const fetchContracts = async (
     pageSize = defaultPageSize,
@@ -110,18 +101,15 @@ export default function TableContract() {
     try {
       setLoading(true);
 
-      // вспомогательная функция – получить «кубик» с заданной страницы
       const fetchChunk = (p) =>
         getAllContracts(100, p, {
           contractorId: selectedContractor || undefined,
-          completed:
-            onlyAtWork === 2 ? true : onlyAtWork === 1 ? false : undefined,
+          completed: onlyAtWork,
           purposeId: selectedPurpose || undefined,
         });
 
       let tempResp;
 
-      // если есть поиск по тех. заданию или фильтр по наличию этапов – забираем все данные сразу
       if (searchTask || stepsFilter !== null) {
         const first = await fetchChunk(1);
         const pageCount = first.meta.pagination.pageCount;
@@ -134,66 +122,29 @@ export default function TableContract() {
         }
         tempResp = first;
       } else {
-        // обычный постраничный режим
         tempResp = await getAllContracts(pageSize, page, {
           contractorId: selectedContractor || undefined,
-          completed:
-            onlyAtWork === 2 ? true : onlyAtWork === 1 ? false : undefined,
+          completed: onlyAtWork,
           purposeId: selectedPurpose || undefined,
         });
       }
 
-      // ─── ВСТАВЬТЕ СЮДА ОТЛАДОЧНЫЕ ЛОГИ ─────────────────────────────────────
-      console.groupCollapsed("🔍 fetchContracts debug");
-      console.log(
-        "➤ total из Strapi (до локальных фильтров):",
-        tempResp.meta.pagination.total
-      );
-      console.log(
-        "➤ количество записей в tempResp.data:",
-        tempResp.data.length
-      );
-      console.log(
-        "➤ первые 10 ID (tempResp.data):",
-        tempResp.data.slice(0, 10).map((c) => c.id)
-      );
-      console.log(
-        "➤ последние 10 ID (tempResp.data):",
-        tempResp.data.slice(-10).map((c) => c.id)
-      );
-      console.groupEnd();
-      // ────────────────────────────────────────────────────────────────────────
-
       let filtered = tempResp.data;
 
-      // фильтр по номерам тех. задания
+      // 3.1. Поиск по номеру ТЗ
       if (searchTask) {
         filtered = filtered.filter((c) =>
           (c.numberTask || "").toLowerCase().includes(searchTask.toLowerCase())
         );
       }
 
-      // фильтр по наличию этапов
+      // 3.2. Фильтр «Наличие этапов»
       if (stepsFilter === "zero") {
         filtered = filtered.filter((c) => (c.steps?.length || 0) === 0);
       } else if (stepsFilter === "nonzero") {
         filtered = filtered.filter((c) => (c.steps?.length || 0) > 0);
       }
 
-      // ЕЩЁ ЛОГ: сколько осталось в filtered после фильтров
-      console.groupCollapsed("🔍 После локальных фильтров");
-      console.log("➤ filtered.length:", filtered.length);
-      console.log(
-        "➤ ID после фильтрации (первые 10):",
-        filtered.slice(0, 10).map((c) => c.id)
-      );
-      console.log(
-        "➤ ID после фильтрации (последние 10):",
-        filtered.slice(-10).map((c) => c.id)
-      );
-      console.groupEnd();
-
-      // если были фильтры – «патчим» meta, чтобы пагинация отрисовывала корректно
       const patched =
         searchTask || stepsFilter !== null
           ? {
@@ -214,13 +165,13 @@ export default function TableContract() {
 
       setAllContracts(patched);
     } catch (e) {
-      console.error(e);
+      console.error("fetchContracts error:", e);
     } finally {
       setLoading(false);
     }
   };
 
-  // загрузка комментариев (количество) для каждой записи
+  // 4) Считаем количество комментариев для каждой записи
   useEffect(() => {
     if (!allContracts?.data) return;
 
@@ -252,7 +203,7 @@ export default function TableContract() {
 
   // ─────────────── эффекты загрузки ───────────────
 
-  // при изменении фильтров (кроме подрядчика/назначения/статуса/поиска/этапов)
+  // При изменении фильтров (contractor, status, purpose, searchTask, stepsFilter)
   useEffect(() => {
     fetchContracts(
       pagination?.pageSize || defaultPageSize,
@@ -267,7 +218,7 @@ export default function TableContract() {
     stepsFilter,
   ]);
 
-  // один раз – загрузка списка подрядчиков + списка назначений
+  // При первом рендере – загрузить списки «Назначения» и «Подрядчики»
   useEffect(() => {
     fetchPurposes();
     fetchContractors();
@@ -341,7 +292,7 @@ export default function TableContract() {
                 setIsCommentsOpen(true);
               }}
             >
-              Комментарии ({commentsCount[record.id] || 0})
+              Комментарии
             </a>
           </Space>
         </>
@@ -366,6 +317,7 @@ export default function TableContract() {
 
   // ─────────────── обработчики ───────────────
   const handlerReload = () => {
+    // сбросим все фильтры и перезагрузим первую страницу
     setSelectedContractor(null);
     setOnlyAtWork(0);
     setSelectedPurpose(null);
