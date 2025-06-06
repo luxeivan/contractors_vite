@@ -291,12 +291,12 @@ export default function TableContract() {
                   setIsCommentsOpen(true);
                 }}
               >
-                <Badge count={commentsCount[record.id]}>
+                {/* <Badge count={commentsCount[record.id]}>
                   <CommentOutlined style={{
                     fontSize: 24,
                     color: "#1677ff"
                   }} />
-                </Badge>
+                </Badge> */}
               </a>
             </Flex>
           </>
@@ -496,11 +496,11 @@ export default function TableContract() {
       </Modal>
 
       {/* ─────────────── Drawer «Комментарии» ─────────────── */}
-      <CommentDrawer
+      {/* <CommentDrawer
         open={isCommentsOpen}
         onClose={() => setIsCommentsOpen(false)}
         contract={commentContract}
-      />
+      /> */}
     </>
   );
 }
