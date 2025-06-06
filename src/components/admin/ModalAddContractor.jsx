@@ -1,5 +1,5 @@
 import { addNewContractor, checkContractor } from "../../lib/getData";
-import { Button, Flex, Form, Input } from "antd";
+import { Button, Flex, Form, Input, Select, Space } from "antd";
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { passwordStrength } from "check-password-strength";
@@ -34,11 +34,13 @@ export default function ModalAddContractor({
   closeModalAddContract,
   update,
 }) {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [formAddContractor] = Form.useForm();
   const [uploading, setUploading] = useState(false);
+  const [type, setType] = useState(1);
   const [inn, setInn] = useState("");
   const [kpp, setKpp] = useState("");
+  const [ogrnip, setOgrnip] = useState("");
   const [isCheckContractor, setIsCheckContractor] = useState(false);
 
   const fetchCheckContractor = useMemo(
@@ -46,7 +48,7 @@ export default function ModalAddContractor({
       debounce((innValue, kppValue) => {
         checkContractor(innValue, kppValue)
           .then((res) => {
-            console.log("Тестируем", res);
+            // console.log("Тестируем", res);
             setIsCheckContractor(res);
           })
           .catch((error) => console.log("error", error));
@@ -56,9 +58,10 @@ export default function ModalAddContractor({
 
   // 3. Обновляем useEffect
   useEffect(() => {
-    fetchCheckContractor(inn, kpp);
+    const value2 = kpp ? kpp : ogrnip
+    fetchCheckContractor(inn, value2);
     return () => fetchCheckContractor.cancel(); // убираем таймер при размонтировании
-  }, [inn, kpp, fetchCheckContractor]);
+  }, [inn, kpp, fetchCheckContractor, ogrnip]);
 
   // const fetchCheckContractor = debounce((inn, kpp) => {
   //   checkContractor(inn, kpp)
@@ -92,6 +95,7 @@ export default function ModalAddContractor({
     setUploading(false);
     closeModalAddContract();
     formAddContractor.resetFields();
+    setType(1);
     update();
   };
 
@@ -106,6 +110,25 @@ export default function ModalAddContractor({
       form={formAddContractor}
       autoComplete="off"
     >
+      <Form.Item
+        label="Тип"
+        name="type"
+        initialValue={1}
+      >
+        <Select
+          onChange={(value) => {
+            setType(value)
+            setInn("")
+            setKpp("")
+            setOgrnip("")
+            formAddContractor.setFieldsValue({ inn: "", kpp: "", ogrnip: "" })
+          }}
+          options={[
+            { value: 1, label: 'Юридическое лицо' },
+            { value: 2, label: 'Индивидуальный предприниматель' },
+          ]}
+        />
+      </Form.Item>
       <Form.Item
         label="Наименование"
         name="name"
@@ -122,8 +145,8 @@ export default function ModalAddContractor({
         rules={[{ required: true, message: "Пожалуйста введите ИНН." }]}
       >
         <Input
-          maxLength={10}
-          minLength={10}
+          maxLength={type === 1 ? 10 : 12}
+          minLength={type === 1 ? 10 : 12}
           onChange={(e) => {
             const value = e.target.value.replace(/[^0-9]/g, "");
             e.target.value = value;
@@ -132,23 +155,43 @@ export default function ModalAddContractor({
           }}
         />
       </Form.Item>
-
-      <Form.Item
-        label="КПП"
-        name="kpp"
-        rules={[{ required: true, message: "Пожалуйста введите КПП." }]}
-      >
-        <Input
-          maxLength={9}
-          minLength={9}
-          onChange={(e) => {
-            const value = e.target.value.replace(/[^0-9]/g, "");
-            e.target.value = value;
-            setKpp(value);
-            formAddContractor.setFieldValue("kpp", value);
-          }}
-        />
-      </Form.Item>
+      {type === 1 &&
+        <Form.Item
+          label="КПП"
+          name="kpp"
+          rules={[{ required: true, message: "Пожалуйста введите КПП." }]}
+        // dependencies={}
+        >
+          <Input
+            maxLength={9}
+            minLength={9}
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = value;
+              setKpp(value);
+              formAddContractor.setFieldValue("kpp", value);
+            }}
+          />
+        </Form.Item>
+      }
+      {type === 2 &&
+        <Form.Item
+          label="ОГРНИП"
+          name="ogrnip"
+          rules={[{ required: true, message: "Пожалуйста введите ОГРНИП." }]}
+        >
+          <Input
+            maxLength={15}
+            minLength={15}
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = value;
+              setOgrnip(value);
+              formAddContractor.setFieldValue("ogrnip", value);
+            }}
+          />
+        </Form.Item>
+      }
 
       <Flex justify="end">
         <Text style={{ color: "#999", fontSize: 10 }}>
@@ -159,7 +202,7 @@ export default function ModalAddContractor({
 
       {/* Пароль с кнопкой генерации */}
       <Form.Item label="Пароль" required>
-        <Input.Group compact>
+        <Space.Compact >
           <Form.Item
             name="password"
             noStyle
@@ -183,7 +226,7 @@ export default function ModalAddContractor({
           <Button style={{ width: 120 }} onClick={handleGeneratePassword}>
             Сгенерировать
           </Button>
-        </Input.Group>
+        </Space.Compact>
       </Form.Item>
 
       <Form.Item
@@ -213,7 +256,7 @@ export default function ModalAddContractor({
 
       {isCheckContractor && (
         <Text style={{ color: "red" }}>
-          Подрядчик с таким ИНН-КПП уже существует
+          Подрядчик с таким ИНН-{type === 1 ? "КПП" : "ОГРНИП"} уже существует
         </Text>
       )}
     </Form>

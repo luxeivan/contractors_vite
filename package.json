@@ -14,8 +14,11 @@
     "@strapi/client": "^1.2.0",
     "antd": "^5.24.7",
     "axios": "^1.8.4",
+    "blueimp-load-image": "^5.16.0",
     "check-password-strength": "^3.0.0",
     "dayjs": "^1.11.13",
+    "exif-js": "^2.3.0",
+    "framer-motion": "^12.14.0",
     "lodash": "^4.17.21",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -31,6 +34,6 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
-    "vite": "^6.2.0"
+    "vite": "^6.3.2"
   }
 }

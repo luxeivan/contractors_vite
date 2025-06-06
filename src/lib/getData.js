@@ -1,27 +1,56 @@
-import axios from 'axios'
-import dayjs from 'dayjs'
+// import axios from 'axios'
+import dayjs from "dayjs";
 import { server } from "../config";
-import { strapi } from '@strapi/client';
+import { strapi } from "@strapi/client";
+
+// глобальный axios-интерсептор, который ловит 401 и редиректит на /login
+import axios from "axios";
+axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem("jwt");
+            window.location.href = "/login";
+        }
+        return Promise.reject(error);
+    }
+);
 
 function getJwt() {
-    return localStorage.getItem('jwt')
+    return localStorage.getItem("jwt");
 }
 
-
-
 // Запрос одного договора для пользователя--------------------------------------------------------------------------
-export async function getContractItem(idContract) {
+export async function getMyContractItem(idContract) {
     try {
-        const res = await axios.get(server + `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose`, {
+        const res = await axios.get(server + `/api/mycontracts/${idContract}`, {
             headers: {
-                Authorization: `Bearer ${await getJwt()}`
-            }
-        })
+                Authorization: `Bearer ${await getJwt()}`,
+            },
+        });
         if (res.data) {
             // console.log(res.data.data)
-            return res.data.data
+            return res.data;
         }
-
+    } catch (error) {
+        console.log("error getContractItem:", error);
+    }
+}
+export async function getContractItem(idContract) {
+    try {
+        const res = await axios.get(
+            server +
+            `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose`,
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`,
+                },
+            }
+        );
+        if (res.data) {
+            // console.log(res.data.data)
+            return res.data.data;
+        }
     } catch (error) {
         console.log("error getContractItem:", error);
     }
@@ -29,15 +58,17 @@ export async function getContractItem(idContract) {
 
 // Запрос одного подрядчика для пользователя--------------------------------------------------------------------------
 export async function getContractorItem(idContractor) {
-
     try {
-        const res = await axios.get(server + `/api/contractors/${idContractor}?populate=contracts`, {
-            headers: {
-                Authorization: `Bearer ${await getJwt()}`
+        const res = await axios.get(
+            server + `/api/contractors/${idContractor}?populate=contracts`,
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`,
+                },
             }
-        })
+        );
         if (res.data) {
-            return res.data
+            return res.data;
         }
     } catch (error) {
         console.log("error getContractorItem:", error);
@@ -47,91 +78,98 @@ export async function getContractorItem(idContractor) {
 // Запрос только своего подрядчика для пользователя--------------------------------------------------------------------------
 export async function getMyContractor() {
     try {
-        const res = await axios.get(server + '/api/mycontractors?populate=contracts', {
-            headers: {
-
-                Authorization: `Bearer ${await getJwt()}`
+        const res = await axios.get(
+            server + "/api/mycontractors?populate[0]=contracts.purpose",
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`,
+                },
             }
-        })
+        );
         if (res.data) {
-            return res.data.results[0]
+            return res.data.results[0];
         }
         // console.log("contractors:", contractors);
     } catch (error) {
         console.log("error getMyContractor:", error);
-
     }
 }
 
 // Запрос всех договоров для админской учетки--------------------------------------------------------------------------
-export async function getAllContracts(pageSize = 5, page = 1, filters = {},) {
+export async function getAllContracts(pageSize = 5, page = 1, filters = {}) {
     const client = strapi({
         baseURL: `${server}/api`,
-        auth: localStorage.getItem('jwt') || undefined
-    })
+        auth: localStorage.getItem("jwt") || undefined,
+    });
     // console.log(filters);
 
     try {
-        const contracts = client.collection('contracts');
+        const contracts = client.collection("contracts");
         const allContracts = await contracts.find({
             filters: {
-                contractor: filters.contractorId ? {
-                    id: {
-                        $eq: filters.contractorId
+                contractor: filters.contractorId
+                    ? {
+                        id: {
+                            $eq: filters.contractorId,
+                        },
                     }
-                } : undefined,
+                    : undefined,
                 // social: filters.social ? filters.social : undefined,
-                completed: filters.completed === 0 ? undefined : (filters.completed === 2 ? true : false),
-                purpose: filters.purposeId ? {
-                    id: {
-                        $eq: filters.purposeId
+                completed:
+                    filters.completed === 0
+                        ? undefined
+                        : filters.completed === 2
+                            ? true
+                            : false,
+                purpose: filters.purposeId
+                    ? {
+                        id: {
+                            $eq: filters.purposeId,
+                        },
                     }
-                } : undefined,
+                    : undefined,
             },
             populate: {
                 steps: true,
                 contractor: true,
-                purpose: true
+                purpose: true,
             },
             sort: {
-                dateContract: "desc"
+                dateContract: "desc",
             },
             pagination: {
                 page: page,
                 pageSize: pageSize,
-            }
+            },
         });
         if (allContracts.data) {
-            return allContracts
+            return allContracts;
         }
     } catch (error) {
         console.log("error getAllContracts:", error);
     }
 }
 
-
-
 // Запрос всех назначений--------------------------------------------------------------------------
-export async function getAllPurposes(pageSize = 100, page = 1, filters = {},) {
+export async function getAllPurposes(pageSize = 100, page = 1, filters = {}) {
     const client = strapi({
         baseURL: `${server}/api`,
-        auth: localStorage.getItem('jwt') || undefined
-    })
+        auth: localStorage.getItem("jwt") || undefined,
+    });
     try {
-        const purposes = client.collection('purposes');
+        const purposes = client.collection("purposes");
 
         const allPurposes = await purposes.find({
-
             sort: {
-                name: "asc"
+                name: "asc",
             },
             pagination: {
                 page: page,
                 pageSize: pageSize,
-            }
+            },
         });
         if (allPurposes.data) {
-            return allPurposes
+            return allPurposes;
         }
     } catch (error) {
         console.log("error getAllPurposes:", error);
@@ -140,15 +178,18 @@ export async function getAllPurposes(pageSize = 100, page = 1, filters = {},) {
 
 // Запрос всех подрядчиков для админской учетки--------------------------------------------------------------------------
 export async function getAllContractors(pageSize = 5, page = 1, filters = {}) {
-
     try {
-        const res = await axios.get(server + `/api/contractors?pagination[pageSize]=${pageSize}&pagination[page]=${page}&sort=createdAt:desc`, {
-            headers: {
-                Authorization: `Bearer ${await getJwt()}`
+        const res = await axios.get(
+            server +
+            `/api/contractors?pagination[pageSize]=${pageSize}&pagination[page]=${page}&sort=createdAt:desc`,
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`,
+                },
             }
-        })
+        );
         if (res.data) {
-            return res.data
+            return res.data;
         }
         // console.log("contractors:", contractors);
     } catch (error) {
@@ -158,21 +199,23 @@ export async function getAllContractors(pageSize = 5, page = 1, filters = {}) {
 
 // Запрос одного подрядчика для админской учетки--------------------------------------------------------------------------
 export async function getContractorItemForAdmin(idContractor) {
-
     try {
-        const res = await axios.get(server + `/api/contractors/${idContractor}?populate[0]=contracts&populate[1]=user`, {
-            headers: {
-                Authorization: `Bearer ${await getJwt()}`
+        const res = await axios.get(
+            server +
+            `/api/contractors/${idContractor}?populate[0]=contracts&populate[1]=user`,
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`,
+                },
             }
-        })
+        );
         if (res.data) {
-            return res.data.data
+            return res.data.data;
         }
     } catch (error) {
         console.log("error getContractorItemForAdmin:", error);
     }
 }
-
 
 // Добавление нового подрядчика--------------------------------------------------------------------------
 export async function addNewContractor(data) {
@@ -180,16 +223,16 @@ export async function addNewContractor(data) {
         // ---------------------------------------------------
         const roleList = await axios.get(server + `/api/users-permissions/roles`, {
             headers: {
-                Authorization: `Bearer ${await getJwt()}`
-            }
-        })
+                Authorization: `Bearer ${await getJwt()}`,
+            },
+        });
         // console.log(roleList);
 
         // ---------------------------------------------------
         const resUser = await axios.post(server + `/api/users`, {
 
-            username: `${data.inn}-${data.kpp}`,
-            email: `${data.inn}@${data.kpp}.ru`,
+            username: data.type === 1 ? `${data.inn}-${data.kpp}` : `${data.inn}-${data.ogrnip}`,
+            email: data.type === 1 ? `${data.inn}@${data.kpp}.ru` : `${data.inn}@${data.ogrnip}.ru`,
             password: data.password,
             role: roleList.data.roles.find(item => item.type === 'user').id,
             confirmed: true
@@ -206,6 +249,7 @@ export async function addNewContractor(data) {
                     name: data.name,
                     inn: data.inn,
                     kpp: data.kpp,
+                    ogrnip: data.ogrnip,
                     user: resUser.data.id,
                 }
             }, {
@@ -218,6 +262,7 @@ export async function addNewContractor(data) {
                 return resContractor.data.data
             }
         }
+
     } catch (error) {
         console.log("error addNewContractor :", error);
     }
@@ -225,38 +270,41 @@ export async function addNewContractor(data) {
 // Добавление нового договора--------------------------------------------------------------------------
 export async function addNewContract(formData, data) {
     try {
-        const file = await axios.post(server + '/api/upload',
-            formData,
-            {
-                headers: {
-                    Authorization: `Bearer ${await getJwt()}`
-                }
-            })
+        const file = await axios.post(server + "/api/upload", formData, {
+            headers: {
+                Authorization: `Bearer ${await getJwt()}`,
+            },
+        });
 
         // -------------------------------------------------------
 
         if (file) {
             // console.log(file);
 
-            const resContract = await axios.post(server + `/api/contracts`, {
-                data: {
-                    number: data.number,
-                    dateContract: dayjs(data.dateContract).add(1, 'day'),
-                    description: data.description,
-                    numberTask: data.numberTask,
-                    comment: data.comment,
-                    social: data.social,
-                    document: file.data[0].id,
-                    contractor: data.contractor
+            const resContract = await axios.post(
+                server + `/api/contracts`,
+                {
+                    data: {
+                        number: data.number,
+                        dateContract: dayjs(data.dateContract).add(1, "day"),
+                        description: data.description,
+                        numberTask: data.numberTask,
+                        comment: data.comment,
+                        // social: data.social,
+                        purpose: data.purpose,
+                        document: file.data[0].id,
+                        contractor: data.contractor,
+                    },
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${await getJwt()}`,
+                    },
                 }
-            }, {
-                headers: {
-                    Authorization: `Bearer ${await getJwt()}`
-                }
-            })
+            );
             // ---------------------------------------------------------
             if (resContract.data) {
-                return resContract.data.data
+                return resContract.data.data;
             }
         }
     } catch (error) {
@@ -270,56 +318,63 @@ export async function updatePassword(userId, newPassword) {
         // console.log("userId", userId);
         // console.log("newPassword", newPassword);
 
-        const resContract = await axios.put(server + `/api/users/${userId}`, {
-            password: newPassword
-        }, {
-            headers: {
-                Authorization: `Bearer ${await getJwt()}`
+        const resContract = await axios.put(
+            server + `/api/users/${userId}`,
+            {
+                password: newPassword,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`,
+                },
             }
-        })
+        );
         // ---------------------------------------------------------
         if (resContract.data) {
             // console.log("resContract.data", resContract.data);
-            return resContract.data.data
+            return resContract.data.data;
         } else {
-            return false
+            return false;
         }
     } catch (error) {
         console.log("error changePassword :", error);
-        return false
+        return false;
     }
 }
 
 // Завершить договор
 export async function completedContract(documentId) {
     try {
-
-        const resContract = await axios.put(server + `/api/contracts/${documentId}`, {
-            data: {
-                completed: true
+        const resContract = await axios.put(
+            server + `/api/contracts/${documentId}`,
+            {
+                data: {
+                    completed: true,
+                },
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`,
+                },
             }
-        }, {
-            headers: {
-                Authorization: `Bearer ${await getJwt()}`
-            }
-        })
+        );
         // ---------------------------------------------------------
         if (resContract.data) {
             // console.log("resContract.data", resContract.data);
-            return resContract.data.data
+            return resContract.data.data;
         } else {
-            return false
+            return false;
         }
     } catch (error) {
         console.log("error changePassword :", error);
-        return false
+        return false;
     }
 }
 
 // Проверка на существование подрядчика по ИНН и КПП
-export async function checkContractor(inn, kpp) {
+export async function checkContractor(inn, value2) {
     try {
-        const res = await axios.get(server + `/api/contractors?filters[inn][$eq]=${inn}&filters[kpp][$eq]=${kpp}`, {
+        const res = await axios.get(server + `/api/contractors?filters[inn][$eq]=${inn}&filters[$or][0][kpp][$eq]=${value2}&filters[$or][1][ogrnip][$eq]=${value2}`, {
             headers: {
                 Authorization: `Bearer ${await getJwt()}`
             }
@@ -336,15 +391,46 @@ export async function checkContractor(inn, kpp) {
         console.log("error checkContractor:", error);
 
     }
+
 }
 // Проверка на существование договора по номеру и дате
-export async function checkContract(idContractor, number, date) {
+export async function checkContract(idContract, number, date) {
     try {
-        const res = await axios.get(server + `/api/contracts?filters[number][$eq]=${number}&filters[dateContract][$eq]=${date}&filters[contractor][id][$eq]=${idContractor}`, {
-            headers: {
-                Authorization: `Bearer ${await getJwt()}`
+        const res = await axios.get(
+            server +
+            `/api/contracts?filters[number][$eq]=${number}&filters[dateContract][$eq]=${date}&filters[contractor][id][$eq]=${idContract}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`,
+                },
             }
-        })
+        );
+        if (res.data) {
+            if (res.data.data.length > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        // console.log("checkContractor:", res.data);
+    } catch (error) {
+        console.log("error checkContract:", error);
+    }
+}
+// Изменение назначения договора
+export async function changePurposeInContract(idContract, newPurposeId) {
+    try {
+        const res = await axios.put(server + `/api/contracts/${idContract}`,
+            {
+                data: {
+                    purpose: newPurposeId
+                }
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`
+                }
+            })
         if (res.data) {
             if (res.data.data.length > 0) {
                 return true
@@ -357,4 +443,5 @@ export async function checkContract(idContractor, number, date) {
         console.log("error checkContract:", error);
 
     }
+
 }

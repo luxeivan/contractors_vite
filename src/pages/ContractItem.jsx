@@ -68,9 +68,10 @@ export default function Contract({ params }) {
                 ) : (
                   <Tag color={"green"}>В работе</Tag>
                 )}
-                {contract.social && <Tag color={"blue"}>Социальный</Tag>}
+                {contract.purpose && <Tag color={contract.purpose.color}>{contract.purpose.name}</Tag>}
               </Flex>
             </Flex>
+              {contract.numberTask ? <Text style={{fontSize: 18,margin:"20px 0", color: "#000", fontStyle: "normal",fontWeight:600 }}>Тех.Задание: <span style={{ color: "#000", fontStyle: "normal",fontWeight:600 }}>{contract.numberTask}</span></Text> : undefined}
             <Text
               style={{
                 color: "#888",
@@ -94,7 +95,7 @@ export default function Contract({ params }) {
                 </Link>
               )}
               <ButtonAddStep
-                idContract={idContract}
+                idContract={contract.id}
                 countSteps={countSteps}
                 updateContract={updateContract}
                 contractCompleted={contract.completed}

@@ -29,6 +29,7 @@ export default function ModalAddContract({
 }) {
   const [contractors, setContractors] = useState([]);
   const [purpose, setPurpose] = useState([]);
+  const [defaultPurpose, setDefaultPurpose] = useState();
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [idContractor, setIdContractor] = useState(false);
@@ -39,7 +40,6 @@ export default function ModalAddContract({
   const [form] = Form.useForm();
   const fetchContractors = async () => {
     const allContractors = await getAllContractors(100, 1);
-    // console.log("allContractors", allContractors)
     setContractors(
       allContractors.data.map((item) => ({
         value: item.id,
@@ -49,13 +49,17 @@ export default function ModalAddContract({
   };
   const fetchPurposes = async () => {
     const allPurposes = await getAllPurposes(100, 1);
-    // console.log("allContractors", allContractors)
     setPurpose(
       allPurposes.data.map((item) => ({
         value: item.id,
         label: item.name,
       }))
     );
+    // console.log(allPurposes);
+    const def = allPurposes.data.find(item => item.name === "Прочее")?.name
+    console.log(def);
+    
+    setDefaultPurpose(def)
   };
 
   const fetchCheckContract = useMemo(
@@ -64,14 +68,13 @@ export default function ModalAddContract({
         if (!idContractor || !number || !dateContract) return; // ранний выход
         checkContract(idContractor, number, dateContract)
           .then((res) => {
-            console.log("Тестируем", res);
+            // console.log("Тестируем", res);
             setIsCheckContract(res);
           })
           .catch((error) => console.log("error", error));
       }, 1000),
     []
   );
-
   useEffect(() => {
     fetchContractors()
     fetchPurposes()
@@ -128,6 +131,9 @@ export default function ModalAddContract({
     },
     fileList,
   };
+
+  // console.log(defaultPurpose)
+
   return (
     <ConfigProvider locale={locale}>
       <Form
@@ -161,7 +167,7 @@ export default function ModalAddContract({
           <DatePicker
             format={"DD.MM.YYYY"}
             onChange={(e) => {
-              console.log(e);
+              // console.log(e);
               setDateContract(dayjs(e).format("YYYY-MM-DD"));
             }}
           />
@@ -175,7 +181,7 @@ export default function ModalAddContract({
         <Form.Item name="comment" label="Комментарий">
           <Input.TextArea />
         </Form.Item>
-        <Form.Item name="social" label="Назначение">
+        <Form.Item name="purpose" label="Назначение" required={true} initialValue={39}>
           <Select options={purpose} />
         </Form.Item>
 
