@@ -343,7 +343,6 @@ export default function TableContract() {
   // ─────────────── JSX ───────────────
   return (
     <>
-      {/* Первая строка фильтров: Статус / Назначение / Наличие этапов */}
       <Flex justify="space-between" align="middle" style={{ marginBottom: 12 }}>
         <Space size="middle" align="center">
           {/* Статус */}
@@ -402,8 +401,15 @@ export default function TableContract() {
         </Space>
       </Flex>
 
-      {/* Вторая строка фильтров: Подрядчик (широкий) / Поиск по ТЗ */}
-      <Flex justify="space-between" align="middle" style={{ marginBottom: 20 }}>
+      <Flex
+        justify="flex-start"
+        align="middle"
+        style={{
+          marginBottom: 20,
+          maxWidth: 765,
+        }}
+      >
+        {/* «Подрядчик»  */}
         <Flex style={{ flex: 1, marginRight: 16 }} align="center">
           <Text style={{ marginRight: 8 }}>Подрядчик:</Text>
           <Select
@@ -417,12 +423,12 @@ export default function TableContract() {
           />
         </Flex>
 
-        {/* Поиск по номеру ТЗ */}
+        {/* «Поиск по № Тех.Задания» */}
         <div>
           <Input
             placeholder="Поиск по № Тех.Задания"
             allowClear
-            style={{ width: 240 }}
+            style={{ width: 209 }}
             onChange={(e) => debouncedTask(e.target.value)}
           />
         </div>
