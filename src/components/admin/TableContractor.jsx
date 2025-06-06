@@ -1,6 +1,6 @@
 import { getAllContractors } from "../../lib/getData";
-import { Table, Flex, Button, Tooltip, Select, Modal, message } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import { Table, Flex, Button, Tooltip, Select, Modal, message, Badge } from "antd";
+import { CommentOutlined, ReloadOutlined } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
@@ -66,7 +66,7 @@ export default function TableContractor() {
     } else {
       setRows(all.filter((c) => c.id === selId));
     }
-    setPage(1); 
+    setPage(1);
   }, [selId, all]);
 
   /* ─────────────── колонки таблицы ─────────────── */
@@ -75,6 +75,7 @@ export default function TableContractor() {
       title: "Наименование",
       dataIndex: "name",
       key: "name",
+      render: (text, record) => <a onClick={() => setInfoId(record.docId)}>{text}</a>,
     },
     {
       title: "ИНН-КПП / ОГРНИП",
@@ -95,18 +96,22 @@ export default function TableContractor() {
 
   if (user?.role?.type !== "readadmin") {
     columns.push({
-      title: "Действия",
+      title: "",
       key: "actions",
       render: (_, r) => (
-        <Flex gap={12}>
-          <a onClick={() => setInfoId(r.docId)}>Информация</a>
+        <Flex size="middle" justify="center">
           <a
-            onClick={() => {
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
               setCRec(r);
               setCOpen(true);
             }}
           >
-            Комментарии
+            <CommentOutlined style={{
+              fontSize: 24,
+              color: "#1677ff"
+            }} />
           </a>
         </Flex>
       ),
@@ -127,6 +132,7 @@ export default function TableContractor() {
     <div>
       <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
         {/* Select-поиск подрядчика */}
+        
         <Select
           allowClear
           showSearch
@@ -134,14 +140,14 @@ export default function TableContractor() {
           placeholder="Подрядчик"
           value={selId || undefined}
           optionFilterProp="label"
-          options={options}
+          options={options.sort((a, b) => a.label.localeCompare(b.label))}
           filterOption={(input, opt) =>
             opt.label.toLowerCase().includes(input.toLowerCase())
           }
           onChange={(val) => setSelId(val || null)}
         />
 
-        <Flex gap={20}>
+        <Flex gap={20} align="center">
           {/* Сброс / обновить */}
           <Tooltip title="Сбросить фильтр / обновить">
             <a
@@ -183,6 +189,14 @@ export default function TableContractor() {
           },
         }}
         rowKey="key"
+        onRow={(record, rowIndex) => {
+          return {
+            onClick: (event) => {
+              // console.log("onClick", event);
+              setInfoId(record.docId)
+            }, // click row
+          };
+        }}
       />
 
       {/* Модалка «Информация» */}

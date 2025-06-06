@@ -14,10 +14,11 @@ import {
   Input,
   Modal,
   Typography,
+  Badge,
 } from "antd";
 import { debounce } from "lodash";
 import React, { useEffect, useState, useMemo } from "react";
-import { ReloadOutlined } from "@ant-design/icons";
+import { CommentOutlined, ReloadOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import axios from "axios";
 import useAuth from "../../store/authStore";
@@ -145,19 +146,19 @@ export default function TableContract() {
       const patched =
         searchTask || stepsFilter !== null
           ? {
-              ...tempResp,
-              data: filtered,
-              meta: {
-                ...tempResp.meta,
-                pagination: {
-                  ...tempResp.meta.pagination,
-                  total: filtered.length,
-                  pageCount: Math.ceil(
-                    filtered.length / tempResp.meta.pagination.pageSize
-                  ),
-                },
+            ...tempResp,
+            data: filtered,
+            meta: {
+              ...tempResp.meta,
+              pagination: {
+                ...tempResp.meta.pagination,
+                total: filtered.length,
+                pageCount: Math.ceil(
+                  filtered.length / tempResp.meta.pagination.pageSize
+                ),
               },
-            }
+            },
+          }
           : tempResp;
 
       setAllContracts(patched);
@@ -222,6 +223,7 @@ export default function TableContract() {
       title: "Номер договора",
       dataIndex: "number",
       key: "number",
+      render: (text, record) => <a onClick={() => openModal(record.documentId)}>{text}</a>,
     },
     {
       title: "Дата договора",
@@ -270,25 +272,36 @@ export default function TableContract() {
 
   if (user?.role?.type !== "readadmin") {
     columns.push({
-      title: "Действия",
+      title: " ",
       key: "action",
-      render: (_, record) => (
-        <>
-          <Space size="middle">
+      render: (_, record) => {
+        // console.log(record);
+
+        return (
+          <>
+            {/* <Space size="middle">
             <a onClick={() => openModal(record.documentId)}>Открыть договор</a>
-          </Space>
-          <Space size="middle">
-            <a
-              onClick={() => {
-                setCommentContract(record);
-                setIsCommentsOpen(true);
-              }}
-            >
-              Комментарии
-            </a>
-          </Space>
-        </>
-      ),
+          </Space> */}
+            <Flex size="middle" justify="center">
+              <a
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  setCommentContract(record);
+                  setIsCommentsOpen(true);
+                }}
+              >
+                <Badge count={commentsCount[record.id]}>
+                  <CommentOutlined style={{
+                    fontSize: 24,
+                    color: "#1677ff"
+                  }} />
+                </Badge>
+              </a>
+            </Flex>
+          </>
+        )
+      },
     });
   }
 
@@ -343,97 +356,94 @@ export default function TableContract() {
   // ─────────────── JSX ───────────────
   return (
     <>
-      <Flex justify="space-between" align="middle" style={{ marginBottom: 12 }}>
-        <Space size="middle" align="center">
-          {/* Статус */}
-          <Space align="center">
-            <Text>Статус:</Text>
-            <Select
-              value={onlyAtWork}
-              style={{ width: 140 }}
-              onChange={(val) => setOnlyAtWork(val)}
-              options={[
-                { value: 0, label: "Все" },
-                { value: 1, label: "В работе" },
-                { value: 2, label: "Архивный" },
-              ]}
-            />
-          </Space>
+      <Flex justify="space-between" wrap={"wrap"} gap={10} style={{ marginBottom: 12 }}>
 
-          {/* Назначение */}
-          <Space align="center">
-            <Text>Назначение:</Text>
-            <Select
-              value={selectedPurpose}
-              style={{ width: 180 }}
-              onChange={(val) => setSelectedPurpose(val)}
-              options={allPurposes}
-            />
-          </Space>
+        <Flex wrap={"wrap"} gap={10}>
+          <Flex wrap={"wrap"} gap={10} vertical>
+            <Flex wrap={"wrap"} gap={10}>
+              {/* Статус */}
+              <Space align="center">
+                <Text>Статус:</Text>
+                <Select
+                  value={onlyAtWork}
+                  style={{ width: 140 }}
+                  onChange={(val) => setOnlyAtWork(val)}
+                  options={[
+                    { value: 0, label: "Все" },
+                    { value: 1, label: "В работе" },
+                    { value: 2, label: "Архивный" },
+                  ]}
+                />
+              </Space>
+              {/* Назначение */}
+              <Space align="center">
+                <Text>Назначение:</Text>
+                <Select
+                  value={selectedPurpose}
+                  style={{ width: 180 }}
+                  onChange={(val) => setSelectedPurpose(val)}
+                  options={allPurposes}
+                />
+              </Space>
+            </Flex>
+            <Flex wrap={"wrap"} gap={10}>
+              {/* «Подрядчик»  */}
+              <Flex style={{ flex: 1, }} align="center">
+                <Text style={{ marginRight: 8 }}>Подрядчик:</Text>
+                <Select
+                  value={selectedContractor}
+                  showSearch
+                  optionFilterProp="label"
+                  style={{ flex: 1 }}
+                  placeholder="Выберите подрядчика"
+                  onChange={(val) => setSelectedContractor(val)}
+                  options={listContractors}
+                />
+              </Flex>
 
-          {/* Наличие этапов */}
-          <Space align="center">
-            <Text>Наличие этапов:</Text>
-            <Select
-              value={stepsFilter}
-              style={{ width: 140 }}
-              onChange={(val) => setStepsFilter(val)}
-              options={[
-                { value: null, label: "Все" },
-                { value: "nonzero", label: "Есть" },
-                { value: "zero", label: "Нет" },
-              ]}
-            />
-          </Space>
-        </Space>
-
-        <Space size="middle" align="center">
-          <Tooltip title="Сброс фильтров">
-            <a onClick={handlerReload}>
-              <ReloadOutlined style={{ fontSize: 18 }} />
-            </a>
-          </Tooltip>
-          {user?.role?.type !== "readadmin" && (
-            <Button type="primary" onClick={handlerAddNewContract}>
-              Добавить новый договор
-            </Button>
-          )}
-        </Space>
-      </Flex>
-
-      <Flex
-        justify="flex-start"
-        align="middle"
-        style={{
-          marginBottom: 20,
-          maxWidth: 765,
-        }}
-      >
-        {/* «Подрядчик»  */}
-        <Flex style={{ flex: 1, marginRight: 16 }} align="center">
-          <Text style={{ marginRight: 8 }}>Подрядчик:</Text>
-          <Select
-            value={selectedContractor}
-            showSearch
-            optionFilterProp="label"
-            style={{ flex: 1 }}
-            placeholder="Выберите подрядчика"
-            onChange={(val) => setSelectedContractor(val)}
-            options={listContractors}
-          />
+            </Flex>
+          </Flex>
+          <Flex wrap={"wrap"} gap={10} vertical>
+            {/* Наличие этапов */}
+            <Space align="center">
+              <Text>Наличие этапов:</Text>
+              <Select
+                value={stepsFilter}
+                style={{ width: 140 }}
+                onChange={(val) => setStepsFilter(val)}
+                options={[
+                  { value: null, label: "Все" },
+                  { value: "nonzero", label: "Есть" },
+                  { value: "zero", label: "Нет" },
+                ]}
+              />
+            </Space>
+            {/* «Поиск по № Тех.Задания» */}
+            <Flex style={{ flex: 1, }} align="center">
+              <Input
+                placeholder="Поиск по № Тех.Задания"
+                allowClear
+                // style={{ width: 209 }}
+                onChange={(e) => debouncedTask(e.target.value)}
+              />
+            </Flex>
+          </Flex>
         </Flex>
-
-        {/* «Поиск по № Тех.Задания» */}
         <div>
-          <Input
-            placeholder="Поиск по № Тех.Задания"
-            allowClear
-            style={{ width: 209 }}
-            onChange={(e) => debouncedTask(e.target.value)}
-          />
+          <Flex wrap={"wrap"} gap={20} align="center">
+            <Tooltip title="Сброс фильтров">
+              <a onClick={handlerReload}>
+                <ReloadOutlined style={{ fontSize: 18 }} />
+              </a>
+            </Tooltip>
+            {user?.role?.type !== "readadmin" && (
+              <Button type="primary" onClick={handlerAddNewContract}>
+                Добавить новый договор
+              </Button>
+            )}
+          </Flex>
         </div>
       </Flex>
-
       {/* ─────────────── Таблица ─────────────── */}
       <Table
         columns={columns}
@@ -452,6 +462,14 @@ export default function TableContract() {
           align: "center",
         }}
         onChange={handlerChange}
+        onRow={(record, rowIndex) => {
+          return {
+            onClick: (event) => {
+              // console.log("onClick", event);
+              openModal(record.documentId)
+            }, // click row
+          };
+        }}
       />
 
       {/* ─────────────── Модалка «Просмотр договора» ─────────────── */}
