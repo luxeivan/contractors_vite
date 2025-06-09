@@ -406,7 +406,7 @@ export default function TableContract() {
           <Flex wrap={"wrap"} gap={10} vertical>
             {/* Наличие этапов */}
             <Space align="center">
-              <Text>Наличие этапов:</Text>
+              <Text>Наличие отчётов:</Text>
               <Select
                 value={stepsFilter}
                 style={{ width: 140 }}
