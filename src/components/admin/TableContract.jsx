@@ -442,6 +442,7 @@ export default function TableContract() {
       </Flex>
       {/* ─────────────── Таблица ─────────────── */}
       <Table
+        rowClassName={() => 'hoverable-row'}
         columns={columns}
         dataSource={data}
         loading={loading}

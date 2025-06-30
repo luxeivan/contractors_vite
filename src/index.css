@@ -1,14 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
 .roboto100 {
-    font-family: "Roboto", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 100;
-    font-style: italic;
-    font-variation-settings:
-      "wdth" 100;
-  }
-*{
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 100;
+  font-style: italic;
+  font-variation-settings: "wdth" 100;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.ant-table-tbody > tr.hoverable-row:hover > td {
+  background-color: rgba(0, 0, 0, 0.08) !important;
 }
