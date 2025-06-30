@@ -1,5 +1,14 @@
 import { getAllContractors } from "../../lib/getData";
-import { Table, Flex, Button, Tooltip, Select, Modal, message, Badge } from "antd";
+import {
+  Table,
+  Flex,
+  Button,
+  Tooltip,
+  Select,
+  Modal,
+  message,
+  Badge,
+} from "antd";
 import { CommentOutlined, ReloadOutlined } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
@@ -75,7 +84,9 @@ export default function TableContractor() {
       title: "Наименование",
       dataIndex: "name",
       key: "name",
-      render: (text, record) => <a onClick={() => setInfoId(record.docId)}>{text}</a>,
+      render: (text, record) => (
+        <a onClick={() => setInfoId(record.docId)}>{text}</a>
+      ),
     },
     {
       title: "ИНН-КПП / ОГРНИП",
@@ -102,8 +113,8 @@ export default function TableContractor() {
         <Flex size="middle" justify="center">
           <a
             onClick={(event) => {
-              event.preventDefault()
-              event.stopPropagation()
+              event.preventDefault();
+              event.stopPropagation();
               setCRec(r);
               setCOpen(true);
             }}
@@ -132,7 +143,7 @@ export default function TableContractor() {
     <div>
       <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
         {/* Select-поиск подрядчика */}
-        
+
         <Select
           allowClear
           showSearch
@@ -173,6 +184,7 @@ export default function TableContractor() {
 
       {/* Таблица */}
       <Table
+        rowClassName={() => "hoverable-row"}
         columns={columns}
         dataSource={data.slice((page - 1) * pageSize, page * pageSize)}
         loading={loading}
@@ -192,9 +204,11 @@ export default function TableContractor() {
         onRow={(record, rowIndex) => {
           return {
             onClick: (event) => {
-              // console.log("onClick", event);
-              setInfoId(record.docId)
-            }, // click row
+              setInfoId(record.docId);
+            },
+            style: {
+              cursor: "pointer",
+            },
           };
         }}
       />
