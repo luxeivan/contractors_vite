@@ -169,34 +169,35 @@ export default function TableContract() {
     }
   };
 
-  useEffect(() => {
-    if (!allContracts?.data) return;
+  //Веротяная проблема с комментариями
+  // useEffect(() => {
+  //   if (!allContracts?.data) return;
 
-    const fetchCommentsCount = async () => {
-      const counts = {};
-      const jwt = localStorage.getItem("jwt");
+  //   const fetchCommentsCount = async () => {
+  //     const counts = {};
+  //     const jwt = localStorage.getItem("jwt");
 
-      await Promise.all(
-        allContracts.data.map(async (contract) => {
-          try {
-            const res = await axios.get(
-              `${server}/api/comments?filters[contract][id][$eq]=${contract.id}`,
-              {
-                headers: { Authorization: `Bearer ${jwt}` },
-              }
-            );
-            counts[contract.id] = res.data.meta?.pagination?.total || 0;
-          } catch {
-            counts[contract.id] = 0;
-          }
-        })
-      );
+  //     await Promise.all(
+  //       allContracts.data.map(async (contract) => {
+  //         try {
+  //           const res = await axios.get(
+  //             `${server}/api/comments?filters[contract][id][$eq]=${contract.id}`,
+  //             {
+  //               headers: { Authorization: `Bearer ${jwt}` },
+  //             }
+  //           );
+  //           counts[contract.id] = res.data.meta?.pagination?.total || 0;
+  //         } catch {
+  //           counts[contract.id] = 0;
+  //         }
+  //       })
+  //     );
 
-      setCommentsCount(counts);
-    };
+  //     setCommentsCount(counts);
+  //   };
 
-    fetchCommentsCount();
-  }, [allContracts]);
+  //   fetchCommentsCount();
+  // }, [allContracts]);
 
   useEffect(() => {
     fetchContracts(
