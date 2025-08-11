@@ -178,9 +178,9 @@ export default function ModalAddContract({
         <Form.Item name="numberTask" label="Номер Тех.Задания">
           <Input />
         </Form.Item>
-        <Form.Item name="comment" label="Комментарий">
+        {/* <Form.Item name="comment" label="Комментарий">
           <Input.TextArea />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item name="purpose" label="Назначение" required={true} initialValue={39}>
           <Select options={purpose} />
         </Form.Item>
