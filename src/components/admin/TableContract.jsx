@@ -291,12 +291,12 @@ export default function TableContract() {
                   setIsCommentsOpen(true);
                 }}
               >
-                <Badge count={commentsCount[record.id]}>
+                {/* <Badge count={commentsCount[record.id]}>
                   <CommentOutlined style={{
                     fontSize: 24,
                     color: "#1677ff"
                   }} />
-                </Badge>
+                </Badge> */}
               </a>
             </Flex>
           </>
@@ -406,7 +406,7 @@ export default function TableContract() {
           <Flex wrap={"wrap"} gap={10} vertical>
             {/* Наличие этапов */}
             <Space align="center">
-              <Text>Наличие этапов:</Text>
+              <Text>Наличие отчётов:</Text>
               <Select
                 value={stepsFilter}
                 style={{ width: 140 }}
@@ -496,11 +496,11 @@ export default function TableContract() {
       </Modal>
 
       {/* ─────────────── Drawer «Комментарии» ─────────────── */}
-      <CommentDrawer
+      {/* <CommentDrawer
         open={isCommentsOpen}
         onClose={() => setIsCommentsOpen(false)}
         contract={commentContract}
-      />
+      /> */}
     </>
   );
 }

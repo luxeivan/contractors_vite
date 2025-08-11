@@ -51,39 +51,66 @@ export default function Contract({ params }) {
     <Container>
       {contract && (
         <>
-          <Flex vertical>
-            <Flex gap={10} align="baseline">
-              <Title style={{ marginBottom: 0 }}>
-                Договор №{contract.number}
-              </Title>
-              <Text
-                style={{ color: "#888", fontStyle: "italic", fontSize: 18 }}
-              >
-                {" "}
-                от {dayjs(contract.dateContract).format("DD.MM.YYYY")}
-              </Text>
-              <Flex>
-                {contract.completed ? (
-                  <Tag color={"volcano"}>Архивный</Tag>
-                ) : (
-                  <Tag color={"green"}>В работе</Tag>
-                )}
-                {contract.purpose && <Tag color={contract.purpose.color}>{contract.purpose.name}</Tag>}
-              </Flex>
-            </Flex>
-              {contract.numberTask ? <Text style={{fontSize: 18,margin:"20px 0", color: "#000", fontStyle: "normal",fontWeight:600 }}>Тех.Задание: <span style={{ color: "#000", fontStyle: "normal",fontWeight:600 }}>{contract.numberTask}</span></Text> : undefined}
-            <Text
+          <Flex wrap="wrap" align="center" style={{ marginBottom: 12 }}>
+            {/* Заголовок, не более двух строк */}
+            <div
               style={{
-                color: "#888",
-                fontStyle: "italic",
-                fontSize: 18,
-                width: "50%",
-                minWidth: 300,
+                flex: "1 1 auto",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                lineHeight: 1.2,
+                fontSize: "1.5rem",
+                fontWeight: 600,
+                marginRight: 8,
               }}
             >
-              {contract.description}
+              Договор №{contract.number}
+            </div>
+
+            {/* Дата */}
+            <Text
+              style={{
+                flex: "0 0 auto",
+                color: "#888",
+                fontStyle: "italic",
+                fontSize: 14,
+                whiteSpace: "nowrap",
+                marginRight: 8,
+              }}
+            >
+              от {dayjs(contract.dateContract).format("DD.MM.YYYY")}
             </Text>
+
+            {/* Статусы */}
+            <Flex wrap="wrap" gap={4}>
+              {contract.completed ? (
+                <Tag color="volcano">Архивный</Tag>
+              ) : (
+                <Tag color="green">В работе</Tag>
+              )}
+              {contract.purpose && (
+                <Tag color={contract.purpose.color}>
+                  {contract.purpose.name}
+                </Tag>
+              )}
+            </Flex>
           </Flex>
+          <Text
+            style={{
+              color: "#888",
+              fontStyle: "italic",
+              fontSize: 14,
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+              maxWidth: "100%",
+              marginBottom: 16,
+            }}
+          >
+            {contract.description}
+          </Text>
+
           <Flex gap={20} vertical>
             <Flex
               justify={contract.document?.url ? "space-between" : "end"}
