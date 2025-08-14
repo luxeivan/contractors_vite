@@ -93,6 +93,8 @@ const rotateImageBlob = async (origDataUrl, origFile, angle) => {
 
 export default function ButtonAddStep({
   idContract,
+  arrSteps = [],
+  documentIdObject = false,
   countSteps,
   updateContract,
   contractCompleted,
@@ -186,7 +188,7 @@ export default function ButtonAddStep({
       });
 
       // 2) Создаём новый шаг
-      await axios.post(
+      const newStep = await axios.post(
         `${server}/api/steps`,
         {
           data: {
@@ -200,7 +202,23 @@ export default function ButtonAddStep({
           headers: { Authorization: `Bearer ${jwt}` },
         }
       );
+      console.log("newStep", newStep);
 
+      // 3) Если это объект строительства, то привязываем шаг к объекту строительства
+      if (documentIdObject) {
+        arrSteps.push(newStep.data.data.id)
+        await axios.put(
+          `${server}/api/object-constructions/${documentIdObject}`,
+          {
+            data: {
+              steps: arrSteps
+            },
+          },
+          {
+            headers: { Authorization: `Bearer ${jwt}` },
+          }
+        );
+      }
       setItems([]);
       setOpen(false);
       form.resetFields();
@@ -340,7 +358,7 @@ export default function ButtonAddStep({
 
           {/* Кнопка “Добавить этап” */}
           <Popconfirm
-            title="Отправить этап?"
+            title="Добавить этап?"
             okText="Добавить"
             cancelText="Отмена"
             onConfirm={() => form.submit()}
