@@ -15,6 +15,7 @@ import {
   Switch,
   Upload,
   Typography,
+  Checkbox,
 } from "antd";
 import React, { useEffect, useState, useMemo } from "react";
 import locale from "antd/es/locale/ru_RU";
@@ -92,7 +93,7 @@ export default function ModalAddContract({
   }, [idContractor, number, dateContract]);
 
   async function handleUpload(values) {
-    // console.log("values", values)
+    console.log("values", values)
     const formData = new FormData();
     fileList.forEach((file) => {
       formData.append("files", file);
@@ -180,10 +181,13 @@ export default function ModalAddContract({
         </Form.Item>
         {/* <Form.Item name="comment" label="Комментарий">
           <Input.TextArea />
-        </Form.Item> */}
+          </Form.Item> */}
         <Form.Item name="purpose" label="Назначение" required={true} initialValue={39}>
           <Select options={purpose} />
         </Form.Item>
+          <Form.Item name="overhaul" label="Договор кап. ремонта">
+            <Switch />
+          </Form.Item>
 
         <Upload {...props} accept=".jpg,.jpeg,.png,.pdf">
           <Button icon={<UploadOutlined />}>Выбрать документ</Button>

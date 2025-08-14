@@ -1,4 +1,4 @@
-import { Collapse, Flex, Image, Tag } from "antd";
+import { Collapse, ConfigProvider, Flex, Image, Tag } from "antd";
 import Title from "antd/es/typography/Title";
 import Text from "antd/es/typography/Text";
 import React, { useEffect } from "react";
@@ -9,6 +9,21 @@ import { server } from "../config";
 import { useParams } from "react-router-dom";
 import useDataDashboard from "../store/useDataDashboard";
 import Container from "../components/Container";
+import ButtonAddObject from "../components/dashboard/ButtonAddObject";
+
+
+const viewSteps = (step) => {
+  // console.log("step", step);
+
+  return <Flex vertical gap={20}>
+    <p>{step.description}</p>
+    <Flex gap={20}>
+      {step.photos?.map((photo) => (
+        <Image key={photo.id} src={`${server}${photo.url}`} width={200} />
+      ))}
+    </Flex>
+  </Flex>
+}
 
 export default function Contract({ params }) {
   const idContract = useParams().id;
@@ -23,10 +38,14 @@ export default function Contract({ params }) {
   // let contract = await getContractItem(idContract)
   // console.log("contract:", contract);
   const countSteps = contract?.steps?.length;
-  const items = contract?.steps?.map((item, index) => ({
+  const countObject_constructions = contract?.object_constructions?.length;
+  // console.log("countObject_constructions",countObject_constructions);
+  console.log("contract", contract);
+
+  const itemsObject = contract?.object_constructions?.map((item, index) => ({
     key: index + 1,
     label: (
-      <Flex gap={30}>
+      <Flex gap={30} >
         <Text>{item.name}</Text>
         <Text>
           <span style={{ color: "gray" }}>
@@ -36,26 +55,90 @@ export default function Contract({ params }) {
       </Flex>
     ),
     children: (
-      <Flex vertical gap={20}>
-        <p>{item.description}</p>
-        <Flex gap={20}>
+      <div>
+        <div style={{ marginBottom: 20 }}>
+          <ButtonAddStep
+            idContract={contract.id}
+            documentIdObject={item.documentId}
+            arrSteps={item.steps.map(item => item.id)}
+            countSteps={item.steps.length}
+            updateContract={updateContract}
+            contractCompleted={contract.completed}
+          />
+        </div>
+        {item.steps.length > 0 &&
+
+          <ConfigProvider
+            theme={{
+              components: {
+                Collapse: {
+                  headerBg: "rgba(0,0,0,0.02)"
+                },
+              },
+            }}
+          >
+
+            <Collapse items={item.steps.map(step => (
+              {
+                key: index + 1,
+                label: (
+                  <Flex gap={30} >
+                    <Text>{step.name}</Text>
+                    <Text>
+                      <span style={{ color: "gray" }}>
+                        Дата создания: {dayjs(step.createdAt).format("DD.MM.YYYY HH:mm")}
+                      </span>
+                    </Text>
+                  </Flex>
+                ),
+                children: viewSteps(step)
+              }
+
+            ))} />
+          </ConfigProvider>
+        }
+        {/* <Flex gap={20}>
           {item.photos?.map((item) => (
             <Image key={item.id} src={`${server}${item.url}`} width={200} />
           ))}
-        </Flex>
+        </Flex> */}
+      </div>
+    ),
+  }));
+  const items = contract?.steps?.map((item, index) => ({
+    key: index + 1,
+    label: (
+      <Flex gap={30} >
+        <Text>{item.name}</Text>
+        <Text>
+          <span style={{ color: "gray" }}>
+            Дата создания: {dayjs(item.createdAt).format("DD.MM.YYYY HH:mm")}
+          </span>
+        </Text>
       </Flex>
     ),
+    // children: ( 
+    //   <Flex vertical gap={20}>
+    //     <p>{item.description}</p>
+    //     <Flex gap={20}>
+    //       {item.photos?.map((item) => (
+    //         <Image key={item.id} src={`${server}${item.url}`} width={200} />
+    //       ))}
+    //     </Flex>
+    //   </Flex>
+    // ),
+    children: viewSteps(item)
   }));
 
   return (
     <Container>
       {contract && (
         <>
-          <Flex wrap="wrap" align="center" style={{ marginBottom: 12 }}>
+          <Flex wrap="wrap" align="center" justify="flex-start" style={{ marginBottom: 12 }}>
             {/* Заголовок, не более двух строк */}
             <div
               style={{
-                flex: "1 1 auto",
+                // flex: "1 1 auto",
                 display: "-webkit-box",
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical",
@@ -121,14 +204,34 @@ export default function Contract({ params }) {
                   <Text style={{ color: "blue" }}>Посмотреть договор</Text>
                 </Link>
               )}
-              <ButtonAddStep
-                idContract={contract.id}
-                countSteps={countSteps}
-                updateContract={updateContract}
-                contractCompleted={contract.completed}
-              />
+              {contract.overhaul &&
+                <ButtonAddObject
+                  idContract={contract.id}
+                  countObject_constructions={countObject_constructions}
+                  updateContract={updateContract}
+                  contractCompleted={contract.completed}
+                />
+              }
+              {!contract.overhaul &&
+                <ButtonAddStep
+                  idContract={contract.id}
+                  countSteps={countSteps}
+                  updateContract={updateContract}
+                  contractCompleted={contract.completed}
+                />
+              }
             </Flex>
-            <Collapse items={items} defaultActiveKey={[items.length]} />
+            <ConfigProvider
+              theme={{
+                components: {
+                  Collapse: {
+                    headerBg: contract.overhaul ? "rgba(19,194,194,0.2)" : undefined
+                  },
+                },
+              }}
+            >
+              <Collapse items={contract.overhaul ? itemsObject : items} defaultActiveKey={[items.length]} />
+            </ConfigProvider>
           </Flex>
         </>
       )}

@@ -40,7 +40,7 @@ export async function getContractItem(idContract) {
     try {
         const res = await axios.get(
             server +
-            `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose`,
+            `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose&populate[4]=object_constructions.steps.photos`,
             {
                 headers: {
                     Authorization: `Bearer ${await getJwt()}`,
@@ -289,7 +289,7 @@ export async function addNewContract(formData, data) {
                         dateContract: dayjs(data.dateContract).add(1, "day"),
                         description: data.description,
                         numberTask: data.numberTask,
-                        comment: data.comment,
+                        overhaul: data.overhaul,
                         // social: data.social,
                         purpose: data.purpose,
                         document: file.data[0].id,
