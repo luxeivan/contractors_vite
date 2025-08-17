@@ -125,10 +125,12 @@ export default function Header() {
                 </Text>
                 <Text style={{ fontSize: 20 }}>{user.username}</Text>
               </p>
+
+
               {user?.role?.type === "user" && (
                 <Link
                   target="_blank"
-                  to={`${server}/uploads/Rukovodstvo_polzovatelya_servisa_Mosoblenergo_fotootchety_fbc0d611d0.pdf`}
+                  to={`${server}/uploads/Rukovodstvo_polzovatelya_servisa_fotootchety_1508_01310226b4.pdf`}
                 >
                   <QuestionCircleOutlined style={{ fontSize: 20 }} />
                 </Link>
@@ -141,6 +143,7 @@ export default function Header() {
                   <QuestionCircleOutlined style={{ fontSize: 20 }} />
                 </Link>
               )}
+
               <ButtonLogout />
             </Flex>
           ) : (
