@@ -99,41 +99,41 @@ export default function ModalViewContract({
   }, [contract])
   // ─────────────── Логика загрузки ───────────────
 
+  const fetchData = async () => {
+    try {
+      setLoadingContract(true);
+
+      // 1.1) Сами данные договора
+      const resContract = await getContractItem(docIdForModal);
+      setContract(resContract);
+
+      // 1.2) Список «назначений» (чтобы заполнить Select)
+      const allPurposes = await getAllPurposes(100, 1);
+      const mapped = allPurposes.data.map((p) => ({
+        value: p.id,
+        label: p.name,
+      }));
+      setPurposeOptions(mapped);
+
+      // 1.3) Текущий пользователь (для комментариев)
+      const jwt = localStorage.getItem("jwt") || "";
+      if (jwt) {
+        const me = await fetchJSON(`${server}/api/users/me`, {
+          headers: { Authorization: `Bearer ${jwt}` },
+        });
+        setMyId(me.id);
+      }
+    } catch (e) {
+      console.error(e);
+      message.error("Не удалось загрузить данные договора");
+    } finally {
+      setLoadingContract(false);
+    }
+  };
   // 1) При открытии модалки — подтягиваем договор и список назначений
   useEffect(() => {
     if (!docIdForModal || !isOpenModal) return;
 
-    const fetchData = async () => {
-      try {
-        setLoadingContract(true);
-
-        // 1.1) Сами данные договора
-        const resContract = await getContractItem(docIdForModal);
-        setContract(resContract);
-
-        // 1.2) Список «назначений» (чтобы заполнить Select)
-        const allPurposes = await getAllPurposes(100, 1);
-        const mapped = allPurposes.data.map((p) => ({
-          value: p.id,
-          label: p.name,
-        }));
-        setPurposeOptions(mapped);
-
-        // 1.3) Текущий пользователь (для комментариев)
-        const jwt = localStorage.getItem("jwt") || "";
-        if (jwt) {
-          const me = await fetchJSON(`${server}/api/users/me`, {
-            headers: { Authorization: `Bearer ${jwt}` },
-          });
-          setMyId(me.id);
-        }
-      } catch (e) {
-        console.error(e);
-        message.error("Не удалось загрузить данные договора");
-      } finally {
-        setLoadingContract(false);
-      }
-    };
 
     fetchData();
   }, [docIdForModal, isOpenModal]);
@@ -459,7 +459,7 @@ export default function ModalViewContract({
                               },
                             }}
                           >
-                            <ViewSteps steps={obj.steps} />
+                            <ViewSteps steps={obj.steps} update={()=>{fetchData()}}/>
                           </ConfigProvider>
                         </>
                       ),
@@ -485,7 +485,7 @@ export default function ModalViewContract({
                 Этапов не добавлено
               </Title>
             ) : (
-              <ViewSteps steps={contract.steps} />
+              <ViewSteps steps={contract.steps} update={()=>{fetchData()}} />
             ))}
 
             {/* ─────────── Кнопка «Перевести в архив» ─────────── */}

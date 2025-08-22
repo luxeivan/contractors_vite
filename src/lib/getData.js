@@ -445,3 +445,33 @@ export async function changePurposeInContract(idContract, newPurposeId) {
     }
 
 }
+
+// Запрос всех подрядчиков для админской учетки--------------------------------------------------------------------------
+export async function renameStep(documentId, name, description) {
+    try {
+        const res = await axios.put(
+            server +
+            `/api/steps/${documentId}`,
+            {
+                data:{
+                    name,
+                    description
+                }
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`,
+                },
+            }
+        );
+        if (res.data) {
+            return res.data;
+        }else{
+            return false
+        }
+        // console.log("contractors:", contractors);
+    } catch (error) {
+        console.log("error getAllContractors:", error);
+        return false
+    }
+}
