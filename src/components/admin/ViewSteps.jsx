@@ -20,7 +20,7 @@ export default function ViewSteps({ steps, update }) {
                     }}>Переименовать этап</Button>
                 </Flex>
                 <Image.PreviewGroup>
-                    <Flex gap={20}>
+                    <Flex gap={20} wrap={"wrap"}>
                         {item.photos?.map(item => <Image key={item.id} src={`${server}${item.url}`} width={200} />)}
                     </Flex>
                 </Image.PreviewGroup>
