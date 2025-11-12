@@ -9,6 +9,7 @@ import Container from '../components/Container'
 import useAuth from '../store/authStore'
 // import { Navigate, useNavigate } from 'react-router-dom'
 import TablePurpose from '../components/admin/TablePurpose'
+import TableReport from '../components/admin/TableReport'
 // const server = process.env.SERVER_API
 export default function Admin() {
   const { user } = useAuth(store => store)
@@ -33,7 +34,12 @@ export default function Admin() {
       key: '3',
       label: 'Назначения',
       children: <TablePurpose />,
-    }
+    },
+    {
+      key: '4',
+      label: 'Отчет',
+      children: <TableReport />,
+    },
   ];
 
   // const jwt = (await cookies()).get('jwt')?.value || null   
