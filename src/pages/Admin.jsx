@@ -35,7 +35,7 @@ export default function Admin() {
       label: 'Назначения',
       children: <TablePurpose />,
     },
-    {
+    user?.role?.type === "readadmin" &&{
       key: '4',
       label: 'Отчет',
       children: <TableReport />,
