@@ -9,7 +9,7 @@ const useContractors = create((set, get) => ({
         const allContractors = await collectionContractors.find({
             populate: {
                 contracts: {
-                    populate: 'steps'
+                    populate: ['steps','purpose']
                 }
             },
             sort: {

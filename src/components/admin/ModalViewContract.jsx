@@ -35,7 +35,7 @@ import { server } from "../../config";
 import useAuth from "../../store/authStore";
 
 const { Panel } = Collapse;
-const { Text,Title } = Typography;
+const { Text, Title } = Typography;
 
 /**
  * Утилита для fetch → JSON с проверкой статуса
@@ -303,6 +303,11 @@ export default function ModalViewContract({
             />
           ),
       },
+      {
+        key: "8",
+        label: "Рамочный договор (по объектам)",
+        children: contract.overhaul ? "да" : "нет"
+      },
     ];
   }
 
@@ -439,7 +444,7 @@ export default function ModalViewContract({
                     contract.object_constructions.map((obj) => ({
 
                       key: obj.id,
-                      label: <><Text style={{fontWeight:600}}>Наименование объекта:</Text> {obj.name}</>,
+                      label: <><Text style={{ fontWeight: 600 }}>Наименование объекта:</Text> {obj.name}</>,
                       children: obj.steps.length === 0 ? (
                         <Title level={4} style={{ color: "#f00" }}>
                           Этапов не добавлено
@@ -459,7 +464,7 @@ export default function ModalViewContract({
                               },
                             }}
                           >
-                            <ViewSteps steps={obj.steps} update={()=>{fetchData()}}/>
+                            <ViewSteps steps={obj.steps} update={() => { fetchData() }} />
                           </ConfigProvider>
                         </>
                       ),
@@ -485,7 +490,7 @@ export default function ModalViewContract({
                 Этапов не добавлено
               </Title>
             ) : (
-              <ViewSteps steps={contract.steps} update={()=>{fetchData()}} />
+              <ViewSteps steps={contract.steps} update={() => { fetchData() }} />
             ))}
 
             {/* ─────────── Кнопка «Перевести в архив» ─────────── */}

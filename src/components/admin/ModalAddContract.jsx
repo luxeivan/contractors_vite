@@ -16,6 +16,7 @@ import {
   Upload,
   Typography,
   Checkbox,
+  Flex,
 } from "antd";
 import React, { useEffect, useState, useMemo } from "react";
 import locale from "antd/es/locale/ru_RU";
@@ -59,7 +60,7 @@ export default function ModalAddContract({
     // console.log(allPurposes);
     const def = allPurposes.data.find(item => item.name === "Прочее")?.name
     console.log(def);
-    
+
     setDefaultPurpose(def)
   };
 
@@ -185,9 +186,13 @@ export default function ModalAddContract({
         <Form.Item name="purpose" label="Назначение" required={true} initialValue={39}>
           <Select options={purpose} />
         </Form.Item>
-          <Form.Item name="overhaul" label="Договор кап. ремонта">
+        <Flex vertical >
+
+          <Form.Item name="overhaul" label={"Рамочный договор"}>
             <Switch />
           </Form.Item>
+          <Typography.Text style={{ color: "gray",marginTop:-27,marginBottom:30,marginLeft:20 }}>Фотоотчеты выполнения этапов договора в разрезе объектов</Typography.Text>
+        </Flex>
 
         <Upload {...props} accept=".jpg,.jpeg,.png,.pdf">
           <Button icon={<UploadOutlined />}>Выбрать документ</Button>
