@@ -61,6 +61,7 @@ export default function TableReport() {
                                     <a onClick={() => { openModal(item.documentId) }}><Typography.Text style={{ color: "blue" }}>{item.number}</Typography.Text></a>
                                     <Typography.Text>Этапов в договоре: <span style={{ fontWeight: 600, color: item.steps.length == 0 ? "red" : undefined }}>{item.steps.length}</span></Typography.Text>
                                     <Typography.Text>Назначение: <Tag color={item.purpose.color}>{item.purpose.name}</Tag></Typography.Text>
+                                    <Typography.Text>Последний этап добавлен: {dayjs(Math.max.apply(Math, item.steps.map(item => new Date(item.createdAt)))).format('DD.MM.YYYY HH:mm')}</Typography.Text>
                                 </Flex>
                             </List.Item>
                         )}
@@ -84,7 +85,7 @@ export default function TableReport() {
                 </Flex>
             }
             <Collapse style={{ marginBottom: 20 }} items={items.sort((a, b) => {
-                if(sortLastStep){
+                if (sortLastStep) {
 
                     console.log(isNaN(dayjs(b.laststepdate).unix()))
                     if (isNaN(a.laststepdate)) return 1;
