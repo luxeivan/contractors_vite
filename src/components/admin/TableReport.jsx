@@ -54,17 +54,24 @@ export default function TableReport() {
                         // footer={<div>Footer</div>}
                         bordered
                         dataSource={item.contracts.filter(item => item.purpose?.id != 49)}
-                        renderItem={item => (
-                            <List.Item>
+                        renderItem={item => {
+                            const lastStep = dayjs(Math.max.apply(Math, item.steps.map(item => new Date(item.createdAt))))
+                            console.log("lastStep", lastStep);
+
+                            return <List.Item>
                                 {/* <Typography.Text mark>[ITEM]</Typography.Text>  */}
                                 <Flex gap={20}>
                                     <a onClick={() => { openModal(item.documentId) }}><Typography.Text style={{ color: "blue" }}>{item.number}</Typography.Text></a>
                                     <Typography.Text>Этапов в договоре: <span style={{ fontWeight: 600, color: item.steps.length == 0 ? "red" : undefined }}>{item.steps.length}</span></Typography.Text>
                                     <Typography.Text>Назначение: <Tag color={item.purpose.color}>{item.purpose.name}</Tag></Typography.Text>
-                                    <Typography.Text>Последний этап добавлен: {dayjs(Math.max.apply(Math, item.steps.map(item => new Date(item.createdAt)))).format('DD.MM.YYYY HH:mm')}</Typography.Text>
+                                    {item.steps.length>0 &&
+                                        <Typography.Text>Последний этап добавлен: {lastStep.format('DD.MM.YYYY HH:mm')}</Typography.Text>
+                                    }
                                 </Flex>
                             </List.Item>
-                        )}
+
+                        }
+                        }
                     />
                 </>,
                 laststepdate: item.lastStepDate
