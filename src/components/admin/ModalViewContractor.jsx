@@ -17,41 +17,41 @@ import { getContractorItemForAdmin, updatePassword } from "../../lib/getData";
 import { passwordStrength } from "check-password-strength";
 import dayjs from "dayjs";
 import { server } from "../../config";
+import useAuth from "../../store/authStore";
 
 const { Panel } = Collapse;
 const { Title, Text } = Typography;
-
 /**
  * Утилита для fetch → JSON с проверкой статуса.
- */
+*/
 const fetchJSON = (url, opt = {}) =>
   fetch(url, opt).then(async (r) => {
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error?.message || r.statusText);
     return j;
   });
-
-/**
- * Генерация случайного «надёжного» пароля длиной length (по умолчанию 12).
- */
-function generatePassword(length = 12) {
-  const specials = "!_-";
-  const lowers = "abcdefghijklmnopqrstuvwxyz";
-  const uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const digits = "0123456789";
-  const all = specials + lowers + uppers + digits;
-
-  let pwd = "";
-  pwd += specials.charAt(Math.floor(Math.random() * specials.length));
-  pwd += uppers.charAt(Math.floor(Math.random() * uppers.length));
-  pwd += lowers.charAt(Math.floor(Math.random() * lowers.length));
-  pwd += digits.charAt(Math.floor(Math.random() * digits.length));
-
-  for (let i = 4; i < length; i++) {
-    pwd += all.charAt(Math.floor(Math.random() * all.length));
-  }
-
-  return pwd
+  
+  /**
+   * Генерация случайного «надёжного» пароля длиной length (по умолчанию 12).
+  */
+ function generatePassword(length = 12) {
+   const specials = "!_-";
+   const lowers = "abcdefghijklmnopqrstuvwxyz";
+   const uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+   const digits = "0123456789";
+   const all = specials + lowers + uppers + digits;
+   
+   let pwd = "";
+   pwd += specials.charAt(Math.floor(Math.random() * specials.length));
+   pwd += uppers.charAt(Math.floor(Math.random() * uppers.length));
+   pwd += lowers.charAt(Math.floor(Math.random() * lowers.length));
+   pwd += digits.charAt(Math.floor(Math.random() * digits.length));
+   
+   for (let i = 4; i < length; i++) {
+     pwd += all.charAt(Math.floor(Math.random() * all.length));
+    }
+    
+    return pwd
     .split("")
     .sort(() => Math.random() - 0.5)
     .join("");
@@ -64,13 +64,14 @@ export default function ModalViewContractor({
 }) {
   // Форма для смены пароля
   const [formChangePassword] = Form.useForm();
-
+  
   // Форма для добавления комментария  ### ОБНОВЛЕНИЕ ###
   const [commentForm] = Form.useForm();
-
+  
   // Состояние самой сущности «Подрядчик»
   const [contractor, setContractor] = useState(null);
   const [loadingInfo, setLoadingInfo] = useState(true);
+  const { user } = useAuth((store) => store);
 
   // Смена пароля
   const [openChangePassword, setOpenChangePassword] = useState(false);
@@ -87,7 +88,7 @@ export default function ModalViewContractor({
 
   const msg = message;
 
-  // ─────────────── 
+  // ───────────────
   // 1) Как только у нас появился docIdForModal и модалка открыта → грузим подрядчика
   useEffect(() => {
     if (!docIdForModal || !isOpenModal) return;
@@ -108,7 +109,7 @@ export default function ModalViewContractor({
     fetchInfo();
   }, [docIdForModal, isOpenModal]);
 
-  // ─────────────── 
+  // ───────────────
   // 2) Как только компонент смонтирован, узнаём ID текущего пользователя (admin)
   useEffect(() => {
     const jwt = localStorage.getItem("jwt") || "";
@@ -120,7 +121,7 @@ export default function ModalViewContractor({
       .catch(() => setMyId(null));
   }, []);
 
-  // ─────────────── 
+  // ───────────────
   // 3) Как только contractor загрузился — подтягиваем его комментарии
   const loadComments = async () => {
     if (!contractor?.id) return;
@@ -150,7 +151,7 @@ export default function ModalViewContractor({
     }
   }, [contractor]);
 
-  // ─────────────── 
+  // ───────────────
   // 4) При отправке нового комментария — сохраняем и сбрасываем поля commentForm
   const handleAddComment = async ({ text }) => {
     if (!text.trim()) return;
@@ -186,7 +187,7 @@ export default function ModalViewContractor({
     }
   };
 
-  // ─────────────── 
+  // ───────────────
   // 5) При отправке смены пароля — аналогично старому коду, но после логирования в комментарии
   const onFinishChangePassword = async (values) => {
     try {
@@ -233,7 +234,7 @@ export default function ModalViewContractor({
     }
   };
 
-  // ─────────────── 
+  // ───────────────
   // Собираем свойства подрядчика для <Descriptions>
   let propertiesContractor = null;
   if (contractor) {
@@ -288,7 +289,9 @@ export default function ModalViewContractor({
       </Spin>
 
       {/* ─────────── Кнопка “Сменить пароль” ─────────── */}
-      {contractor && (
+            {
+            (user?.role?.type === "admin") && 
+            contractor && (
         <Button
           danger
           style={{ marginTop: 16 }}
