@@ -40,7 +40,7 @@ export async function getContractItem(idContract) {
     try {
         const res = await axios.get(
             server +
-            `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose&populate[4]=object_constructions.steps.photos`,
+            `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose&populate[4]=object_constructions.steps.photos&populate[5]=filial`,
             {
                 headers: {
                     Authorization: `Bearer ${await getJwt()}`,
@@ -133,6 +133,7 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {}) {
                 steps: true,
                 contractor: true,
                 purpose: true,
+                filial: true,
             },
             sort: {
                 dateContract: "desc",
@@ -173,6 +174,31 @@ export async function getAllPurposes(pageSize = 100, page = 1, filters = {}) {
         }
     } catch (error) {
         console.log("error getAllPurposes:", error);
+    }
+}
+// Запрос всех филиалов--------------------------------------------------------------------------
+export async function getAllFilials(pageSize = 100, page = 1, filters = {}) {
+    const client = strapi({
+        baseURL: `${server}/api`,
+        auth: localStorage.getItem("jwt") || undefined,
+    });
+    try {
+        const filials = client.collection("filials");
+
+        const allFilials = await filials.find({
+            sort: {
+                name: "asc",
+            },
+            pagination: {
+                page: page,
+                pageSize: pageSize,
+            },
+        });
+        if (allFilials.data) {
+            return allFilials;
+        }
+    } catch (error) {
+        console.log("error getAllFilials:", error);
     }
 }
 
@@ -424,6 +450,34 @@ export async function changePurposeInContract(idContract, newPurposeId) {
             {
                 data: {
                     purpose: newPurposeId
+                }
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${await getJwt()}`
+                }
+            })
+        if (res.data) {
+            if (res.data.data.length > 0) {
+                return true
+            } else {
+                return false
+            }
+        }
+        // console.log("checkContractor:", res.data);
+    } catch (error) {
+        console.log("error checkContract:", error);
+
+    }
+
+}
+// Изменение филиала договора
+export async function changeFilialInContract(idContract, newFilialId) {
+    try {
+        const res = await axios.put(server + `/api/contracts/${idContract}`,
+            {
+                data: {
+                    filial: newFilialId
                 }
             },
             {

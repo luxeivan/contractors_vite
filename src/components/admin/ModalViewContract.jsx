@@ -22,8 +22,10 @@ import {
 } from "antd";
 import {
   getAllPurposes,
+  getAllFilials,
   getContractItem,
   changePurposeInContract,
+  changeFilialInContract,
   completedContract,
 } from "../../lib/getData";
 import ViewSteps from "./ViewSteps";
@@ -82,6 +84,9 @@ export default function ModalViewContract({
   // Назначения (для Select, если нужно менять назначение)
   const [purposeOptions, setPurposeOptions] = useState([]);
 
+  // Назначения (для Select, если нужно менять назначение)
+  const [filialOptions, setFilialOptions] = useState([]);
+
   // Комментарии (см. «### ОБНОВЛЕНИЕ ###»)
   const [comments, setComments] = useState([]);
   const [commentsCount, setCommentsCount] = useState(0);
@@ -92,6 +97,9 @@ export default function ModalViewContract({
 
   // Смена назначений / завершение договора
   const [changingPurpose, setChangingPurpose] = useState(false);
+
+  // Смена филиала 
+  const [changingFilial, setChangingFilial] = useState(false);
 
   useEffect(() => {
     console.log("contract", contract);
@@ -115,7 +123,15 @@ export default function ModalViewContract({
       }));
       setPurposeOptions(mapped);
 
-      // 1.3) Текущий пользователь (для комментариев)
+      // 1.3) Список «назначений» (чтобы заполнить Select)
+      const allFilials = await getAllFilials(100, 1);
+      const mappedFilials = allFilials.data.map((p) => ({
+        value: p.id,
+        label: p.name,
+      }));
+      setFilialOptions(mappedFilials);
+
+      // 1.4) Текущий пользователь (для комментариев)
       const jwt = localStorage.getItem("jwt") || "";
       if (jwt) {
         const me = await fetchJSON(`${server}/api/users/me`, {
@@ -223,6 +239,28 @@ export default function ModalViewContract({
       setChangingPurpose(false);
     }
   };
+  // Смена «филиала»
+  const handleChangeFilials = async (newFilialId) => {
+    if (!contract) return;
+    setChangingPurpose(true);
+    try {
+      await changeFilialInContract(contract.documentId, newFilialId);
+      await logContractAction({
+        contractId: contract.id,
+        text: `📌 Филиал изменен на «${filialOptions.find((p) => p.value === newFilialId)?.label || "—"
+          }»`,
+      });
+      // Обновляем данные договора и родительский список
+      const updated = await getContractItem(contract.documentId);
+      setContract(updated);
+      update();
+    } catch (e) {
+      console.error("Ошибка при смене назначения:", e);
+      message.error("Не удалось изменить филиал");
+    } finally {
+      setChangingFilial(false);
+    }
+  };
 
   // Перевод договора в архив
   const handleComplete = async () => {
@@ -305,6 +343,22 @@ export default function ModalViewContract({
       },
       {
         key: "8",
+        label: "Филиал",
+        children:
+          user?.role?.type === "readadmin" ? (
+            <Tag color={contract.filial.color}>{contract.filial.name}</Tag>
+          ) : (
+            <Select
+              style={{ minWidth: 300 }}
+              value={contract.filial?.id}
+              onChange={handleChangeFilials}
+              loading={changingFilial}
+              options={filialOptions}
+            />
+          ),
+      },
+      {
+        key: "9",
         label: "Рамочный договор (по объектам)",
         children: contract.overhaul ? "да" : "нет"
       },

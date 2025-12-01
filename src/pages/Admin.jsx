@@ -10,6 +10,7 @@ import useAuth from '../store/authStore'
 // import { Navigate, useNavigate } from 'react-router-dom'
 import TablePurpose from '../components/admin/TablePurpose'
 import TableReport from '../components/admin/TableReport'
+import TableFilial from '../components/admin/TableFilials'
 // const server = process.env.SERVER_API
 export default function Admin() {
   const { user } = useAuth(store => store)
@@ -35,8 +36,13 @@ export default function Admin() {
       label: 'Назначения',
       children: <TablePurpose />,
     },
-    {
+    user?.role?.type !== "readadmin" && {
       key: '4',
+      label: 'Филиалы',
+      children: <TableFilial />,
+    },
+    {
+      key: '5',
       label: 'Отчет',
       children: <TableReport />,
     },
