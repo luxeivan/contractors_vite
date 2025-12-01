@@ -346,7 +346,7 @@ export default function ModalViewContract({
         label: "Филиал",
         children:
           user?.role?.type === "readadmin" ? (
-            <Tag color={contract.filial.color}>{contract.filial.name}</Tag>
+            <Tag color={contract?.filial?.color}>{contract?.filial?.name}</Tag>
           ) : (
             <Select
               style={{ minWidth: 300 }}
