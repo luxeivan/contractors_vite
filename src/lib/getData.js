@@ -318,6 +318,7 @@ export async function addNewContract(formData, data) {
                         overhaul: data.overhaul,
                         // social: data.social,
                         purpose: data.purpose,
+                        filial: data.filial,
                         document: file.data[0].id,
                         contractor: data.contractor,
                     },

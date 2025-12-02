@@ -2,6 +2,7 @@ import {
   addNewContract,
   checkContract,
   getAllContractors,
+  getAllFilials,
   getAllPurposes,
 } from "../../lib/getData";
 import { UploadOutlined } from "@ant-design/icons";
@@ -31,6 +32,7 @@ export default function ModalAddContract({
 }) {
   const [contractors, setContractors] = useState([]);
   const [purpose, setPurpose] = useState([]);
+  const [filials, setFilials] = useState([]);
   const [defaultPurpose, setDefaultPurpose] = useState();
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -63,6 +65,20 @@ export default function ModalAddContract({
 
     setDefaultPurpose(def)
   };
+  const fetchFilials = async () => {
+    const allFilials = await getAllFilials(100, 1);
+    setFilials(
+      allFilials.data.map((item) => ({
+        value: item.id,
+        label: item.name,
+      }))
+    );
+    // console.log(allPurposes);
+    const def = allPurposes.data.find(item => item.name === "Прочее")?.name
+    console.log(def);
+
+    setDefaultPurpose(def)
+  };
 
   const fetchCheckContract = useMemo(
     () =>
@@ -80,6 +96,7 @@ export default function ModalAddContract({
   useEffect(() => {
     fetchContractors()
     fetchPurposes()
+    fetchFilials()
   }, [])
 
 
@@ -185,6 +202,9 @@ export default function ModalAddContract({
           </Form.Item> */}
         <Form.Item name="purpose" label="Назначение" required={true} initialValue={39}>
           <Select options={purpose} />
+        </Form.Item>
+        <Form.Item name="filial" label="Филиал" required={true}>
+          <Select options={filials} />
         </Form.Item>
         <Flex vertical >
 
