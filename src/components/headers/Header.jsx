@@ -50,7 +50,9 @@ export default function Header() {
           style={{ padding: 20, width: "100%" }}
           className={styles.topheader}
         >
+          <Link to={user?.role?.type === "user"?"/dashboard":"/admin"}>
           <Image src={logo} preview={false} width={300} />
+          </Link>
           {user?.role?.type === "user" && (
             <>
               <Tooltip title="Приложение автоматически вставляет на фотографию текущее время и адрес">

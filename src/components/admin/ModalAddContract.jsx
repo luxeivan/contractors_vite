@@ -200,7 +200,7 @@ export default function ModalAddContract({
         {/* <Form.Item name="comment" label="Комментарий">
           <Input.TextArea />
           </Form.Item> */}
-        <Form.Item name="purpose" label="Назначение" required={true} initialValue={39}>
+        <Form.Item name="purpose" label="Назначение" required={true} initialValue={61}>
           <Select options={purpose} />
         </Form.Item>
         <Form.Item name="filial" label="Филиал" required={true}>
