@@ -53,7 +53,7 @@ export default function TableContract() {
   const [commentsCount, setCommentsCount] = useState({});
 
   // фильтры
-  const [onlyAtWork, setOnlyAtWork] = useState(0);
+  const [onlyAtWork, setOnlyAtWork] = useState(1);
   const [selectedPurpose, setSelectedPurpose] = useState(null);
   const [filials, setFilials] = useState([]);
   const [selectedFilial, setSelectedFilial] = useState(null);
@@ -347,7 +347,7 @@ export default function TableContract() {
   // ─────────────── обработчики ───────────────
   const handlerReload = () => {
     setSelectedContractor(null);
-    setOnlyAtWork(0);
+    setOnlyAtWork(1);
     setSelectedPurpose(null);
     setSelectedFilial(null);
     setSearchTask("");
