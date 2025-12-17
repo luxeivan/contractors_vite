@@ -2,6 +2,7 @@ import {
   getAllContractors,
   getAllContracts,
   getAllPurposes,
+  getAllFilials,
 } from "../../lib/getData";
 import {
   Table,
@@ -54,6 +55,8 @@ export default function TableContract() {
   // фильтры
   const [onlyAtWork, setOnlyAtWork] = useState(0);
   const [selectedPurpose, setSelectedPurpose] = useState(null);
+  const [filials, setFilials] = useState([]);
+  const [selectedFilial, setSelectedFilial] = useState(null);
   const [selectedContractor, setSelectedContractor] = useState(null);
   const [searchTask, setSearchTask] = useState("");
   const [stepsFilter, setStepsFilter] = useState(null);
@@ -76,6 +79,22 @@ export default function TableContract() {
       setAllPurposes(temp);
     } catch (error) {
       console.error("fetchPurposes error:", error);
+    }
+  };
+
+  const fetchFilials = async () => {
+    try {
+      const res = await getAllFilials(100, 1);
+      const temp = res.data
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((item) => ({
+          value: item.id,
+          label: item.name,
+        }));
+      temp.unshift({ value: null, label: "Все" });
+      setFilials(temp);
+    } catch (error) {
+      console.error("fetchFilials error:", error);
     }
   };
 
@@ -143,8 +162,17 @@ export default function TableContract() {
         filtered = filtered.filter((c) => (c.steps?.length || 0) > 0);
       }
 
+      if (selectedFilial !== null) {
+        filtered = filtered.filter(
+          (c) =>
+            c.filial &&
+            (c.filial.id === selectedFilial ||
+             c.filial?.documentId === selectedFilial)
+        );
+      }
+
       const patched =
-        searchTask || stepsFilter !== null
+        searchTask || stepsFilter !== null || selectedFilial !== null
           ? {
               ...tempResp,
               data: filtered,
@@ -209,12 +237,14 @@ export default function TableContract() {
     selectedContractor,
     onlyAtWork,
     selectedPurpose,
+    selectedFilial,
     searchTask,
     stepsFilter,
   ]);
 
   useEffect(() => {
     fetchPurposes();
+    fetchFilials();
     fetchContractors();
   }, []);
 
@@ -319,6 +349,7 @@ export default function TableContract() {
     setSelectedContractor(null);
     setOnlyAtWork(0);
     setSelectedPurpose(null);
+    setSelectedFilial(null);
     setSearchTask("");
     setStepsFilter(null);
     fetchContracts(defaultPageSize, defaultPage);
@@ -383,6 +414,32 @@ export default function TableContract() {
                   options={allPurposes}
                 />
               </Space>
+              {/* Наличие этапов */}
+              <Space align="center">
+                <Text>Наличие отчётов:</Text>
+                <Select
+                  value={stepsFilter}
+                  style={{ width: 140 }}
+                  onChange={(val) => setStepsFilter(val)}
+                  options={[
+                    { value: null, label: "Все" },
+                    { value: "nonzero", label: "Есть" },
+                    { value: "zero", label: "Нет" },
+                  ]}
+                />
+              </Space>
+              {/* Филиал */}
+              <Space align="center">
+                <Text>Филиал:</Text>
+                <Select
+                  value={selectedFilial}
+                  style={{ width: 180 }}
+                  allowClear
+                  placeholder="Все"
+                  onChange={(val) => setSelectedFilial(val ?? null)}
+                  options={filials}
+                />
+              </Space>
             </Flex>
             <Flex wrap={"wrap"} gap={10}>
               {/* «Подрядчик»  */}
@@ -398,31 +455,14 @@ export default function TableContract() {
                   options={listContractors}
                 />
               </Flex>
-            </Flex>
-          </Flex>
-          <Flex wrap={"wrap"} gap={10} vertical>
-            {/* Наличие этапов */}
-            <Space align="center">
-              <Text>Наличие отчётов:</Text>
-              <Select
-                value={stepsFilter}
-                style={{ width: 140 }}
-                onChange={(val) => setStepsFilter(val)}
-                options={[
-                  { value: null, label: "Все" },
-                  { value: "nonzero", label: "Есть" },
-                  { value: "zero", label: "Нет" },
-                ]}
-              />
-            </Space>
-            {/* «Поиск по № Тех.Задания» */}
-            <Flex style={{ flex: 1 }} align="center">
-              <Input
-                placeholder="Поиск по № Тех.Задания"
-                allowClear
-                // style={{ width: 209 }}
-                onChange={(e) => debouncedTask(e.target.value)}
-              />
+              {/* Поиск по № Тех.Задания */}
+              <Flex style={{ flex: 1 }} align="center">
+                <Input
+                  placeholder="Поиск по № Тех.Задания"
+                  allowClear
+                  onChange={(e) => debouncedTask(e.target.value)}
+                />
+              </Flex>
             </Flex>
           </Flex>
         </Flex>
