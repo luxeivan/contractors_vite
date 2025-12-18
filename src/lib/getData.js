@@ -128,6 +128,13 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {}) {
                         },
                     }
                     : undefined,
+                filial: filters.filialId
+                    ? {
+                        id: {
+                            $eq: filters.filialId,
+                        },
+                    }
+                    : undefined,
             },
             populate: {
                 steps: true,

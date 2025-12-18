@@ -117,17 +117,17 @@ export default function TableContract() {
   ) => {
     try {
       setLoading(true);
-
       const fetchChunk = (p) =>
         getAllContracts(100, p, {
           contractorId: selectedContractor || undefined,
           completed: onlyAtWork,
           purposeId: selectedPurpose || undefined,
+          filialId: selectedFilial || undefined,
         });
 
       let tempResp;
 
-      if (searchTask || stepsFilter !== null || selectedFilial !== null) {
+      if (searchTask || stepsFilter !== null) {
         const first = await fetchChunk(1);
         const pageCount = first.meta.pagination.pageCount;
         if (pageCount > 1) {
@@ -138,10 +138,12 @@ export default function TableContract() {
         }
         tempResp = first;
       } else {
+        // Теперь здесь filialId передается на бэкенд
         tempResp = await getAllContracts(pageSize, page, {
           contractorId: selectedContractor || undefined,
           completed: onlyAtWork,
           purposeId: selectedPurpose || undefined,
+          filialId: selectedFilial || undefined, // ← И ЗДЕСЬ ТОЖЕ
         });
       }
 
@@ -159,17 +161,17 @@ export default function TableContract() {
         filtered = filtered.filter((c) => (c.steps?.length || 0) > 0);
       }
 
-      if (selectedFilial !== null) {
-        filtered = filtered.filter(
-          (c) =>
-            c.filial &&
-            (c.filial.id === selectedFilial ||
-              c.filial?.documentId === selectedFilial)
-        );
-      }
+      // УБИРАЕМ фильтрацию по филиалу на клиенте, т.к. она теперь на сервере
+      // if (selectedFilial !== null) {
+      //   filtered = filtered.filter(
+      //     (c) =>
+      //       c.filial &&
+      //       (c.filial.id === selectedFilial ||
+      //         c.filial?.documentId === selectedFilial)
+      //   );
+      // }
 
-      const isClientFiltering =
-        !!searchTask || stepsFilter !== null || selectedFilial !== null;
+      const isClientFiltering = !!searchTask || stepsFilter !== null;
 
       if (isClientFiltering) {
         const start = (page - 1) * pageSize;
@@ -212,7 +214,7 @@ export default function TableContract() {
     selectedContractor,
     onlyAtWork,
     selectedPurpose,
-    selectedFilial,
+    selectedFilial, 
     searchTask,
     stepsFilter,
   ]);
@@ -418,7 +420,6 @@ export default function TableContract() {
                   value={selectedFilial}
                   style={{ width: 180 }}
                   allowClear
-                  placeholder="Все"
                   onChange={(val) => setSelectedFilial(val)}
                   options={allFilials}
                 />
