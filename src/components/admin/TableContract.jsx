@@ -354,13 +354,22 @@ export default function TableContract() {
 
   // ─────────────── обработчики ───────────────
   const handlerReload = () => {
+    const pageSize = pagination?.pageSize || defaultPageSize;
+
     setSelectedContractor(null);
     setOnlyAtWork(1);
     setSelectedPurpose(null);
     setSelectedFilial(null);
     setSearchTask("");
     setStepsFilter(null);
-    fetchContracts(defaultPageSize, defaultPage);
+
+    setPagination((prev) => ({
+      ...(prev || {}),
+      current: defaultPage,
+      pageSize,
+    }));
+
+    fetchContracts(pageSize, defaultPage);
   };
 
   const handlerChange = (pag) => {
