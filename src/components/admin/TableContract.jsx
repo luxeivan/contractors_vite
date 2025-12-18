@@ -130,7 +130,7 @@ export default function TableContract() {
 
       let tempResp;
 
-      if (searchTask || stepsFilter !== null) {
+      if (searchTask || stepsFilter !== null || selectedFilial !== null) {
         const first = await fetchChunk(1);
         const pageCount = first.meta.pagination.pageCount;
         if (pageCount > 1) {
@@ -171,25 +171,33 @@ export default function TableContract() {
         );
       }
 
-      const patched =
-        searchTask || stepsFilter !== null || selectedFilial !== null
-          ? {
-              ...tempResp,
-              data: filtered,
-              meta: {
-                ...tempResp.meta,
-                pagination: {
-                  ...tempResp.meta.pagination,
-                  total: filtered.length,
-                  pageCount: Math.ceil(
-                    filtered.length / tempResp.meta.pagination.pageSize
-                  ),
-                },
-              },
-            }
-          : tempResp;
+      const isClientFiltering =
+        !!searchTask || stepsFilter !== null || selectedFilial !== null;
 
-      setAllContracts(patched);
+      if (isClientFiltering) {
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        const pageData = filtered.slice(start, end);
+
+        const patched = {
+          ...tempResp,
+          data: pageData,
+          meta: {
+            ...tempResp.meta,
+            pagination: {
+              ...tempResp.meta.pagination,
+              page,
+              pageSize,
+              total: filtered.length,
+              pageCount: Math.ceil(filtered.length / pageSize),
+            },
+          },
+        };
+
+        setAllContracts(patched);
+      } else {
+        setAllContracts(tempResp);
+      }
     } catch (e) {
       console.error("fetchContracts error:", e);
     } finally {
