@@ -58,7 +58,7 @@ export default function ModalAddContractor({
 
   // 3. Обновляем useEffect
   useEffect(() => {
-    const value2 = kpp ? kpp : ogrnip
+    const value2 = kpp ? kpp : ogrnip;
     fetchCheckContractor(inn, value2);
     return () => fetchCheckContractor.cancel(); // убираем таймер при размонтировании
   }, [inn, kpp, fetchCheckContractor, ogrnip]);
@@ -94,22 +94,18 @@ export default function ModalAddContractor({
       form={formAddContractor}
       autoComplete="off"
     >
-      <Form.Item
-        label="Тип"
-        name="type"
-        initialValue={1}
-      >
+      <Form.Item label="Тип" name="type" initialValue={1}>
         <Select
           onChange={(value) => {
-            setType(value)
-            setInn("")
-            setKpp("")
-            setOgrnip("")
-            formAddContractor.setFieldsValue({ inn: "", kpp: "", ogrnip: "" })
+            setType(value);
+            setInn("");
+            setKpp("");
+            setOgrnip("");
+            formAddContractor.setFieldsValue({ inn: "", kpp: "", ogrnip: "" });
           }}
           options={[
-            { value: 1, label: 'Юридическое лицо' },
-            { value: 2, label: 'Индивидуальный предприниматель' },
+            { value: 1, label: "Юридическое лицо" },
+            { value: 2, label: "Индивидуальный предприниматель" },
           ]}
         />
       </Form.Item>
@@ -139,12 +135,12 @@ export default function ModalAddContractor({
           }}
         />
       </Form.Item>
-      {type === 1 &&
+      {type === 1 && (
         <Form.Item
           label="КПП"
           name="kpp"
           rules={[{ required: true, message: "Пожалуйста введите КПП." }]}
-        // dependencies={}
+          // dependencies={}
         >
           <Input
             maxLength={9}
@@ -157,8 +153,8 @@ export default function ModalAddContractor({
             }}
           />
         </Form.Item>
-      }
-      {type === 2 &&
+      )}
+      {type === 2 && (
         <Form.Item
           label="ОГРНИП"
           name="ogrnip"
@@ -175,7 +171,7 @@ export default function ModalAddContractor({
             }}
           />
         </Form.Item>
-      }
+      )}
 
       <Flex justify="end">
         <Text style={{ color: "#999", fontSize: 10 }}>
@@ -186,7 +182,7 @@ export default function ModalAddContractor({
 
       {/* Пароль с кнопкой генерации */}
       <Form.Item label="Пароль" required>
-        <Space.Compact >
+        <Space.Compact>
           <Form.Item
             name="password"
             noStyle

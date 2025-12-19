@@ -301,21 +301,28 @@ export default function ModalViewContract({
       },
       {
         key: "3",
+        label: "Дата окончания договора",
+        children: contract.dateEndContract
+          ? <span>{dayjs(contract.dateEndContract).format("DD.MM.YYYY")}</span>
+          : <Text type="secondary">не указана</Text>,
+      },
+      {
+        key: "4",
         label: "Номер Тех.Задания",
         children: contract.numberTask,
       },
       {
-        key: "4",
+        key: "5",
         label: "Подрядчик",
         children: contract.contractor.name,
       },
       {
-        key: "5",
+        key: "6",
         label: "ИНН-КПП",
         children: `${contract.contractor.inn}-${contract.contractor.kpp}`,
       },
       {
-        key: "6",
+        key: "7",
         label: "Файл договора",
         children: contract.document ? (
           <Link to={`${server}${contract.document.url}`} target="_blank">
@@ -326,7 +333,7 @@ export default function ModalViewContract({
         ),
       },
       {
-        key: "7",
+        key: "8",
         label: "Назначение",
         children:
           user?.role?.type === "readadmin" ? (
@@ -342,7 +349,7 @@ export default function ModalViewContract({
           ),
       },
       {
-        key: "8",
+        key: "9",
         label: "Филиал",
         children:
           user?.role?.type === "readadmin" ? (
@@ -358,7 +365,7 @@ export default function ModalViewContract({
           ),
       },
       {
-        key: "9",
+        key: "10",
         label: "Рамочный договор (по объектам)",
         children: contract.overhaul ? "да" : "нет"
       },
