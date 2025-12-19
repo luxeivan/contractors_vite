@@ -39,6 +39,7 @@ export default function ModalAddContract({
   const [idContractor, setIdContractor] = useState(false);
   const [number, setNumber] = useState(false);
   const [dateContract, setDateContract] = useState(false);
+  // const [dateEndContract, setDateEndContract] = useState(null);
   const [isCheckContract, setIsCheckContract] = useState(false);
 
   const [form] = Form.useForm();
@@ -60,10 +61,10 @@ export default function ModalAddContract({
       }))
     );
     // console.log(allPurposes);
-    const def = allPurposes.data.find(item => item.name === "Прочее")?.name
+    const def = allPurposes.data.find((item) => item.name === "Прочее")?.name;
     console.log(def);
 
-    setDefaultPurpose(def)
+    setDefaultPurpose(def);
   };
   const fetchFilials = async () => {
     const allFilials = await getAllFilials(100, 1);
@@ -74,10 +75,10 @@ export default function ModalAddContract({
       }))
     );
     // console.log(allPurposes);
-    const def = allPurposes.data.find(item => item.name === "Прочее")?.name
+    const def = allPurposes.data.find((item) => item.name === "Прочее")?.name;
     console.log(def);
 
-    setDefaultPurpose(def)
+    setDefaultPurpose(def);
   };
 
   const fetchCheckContract = useMemo(
@@ -94,12 +95,10 @@ export default function ModalAddContract({
     []
   );
   useEffect(() => {
-    fetchContractors()
-    fetchPurposes()
-    fetchFilials()
-  }, [])
-
-
+    fetchContractors();
+    fetchPurposes();
+    fetchFilials();
+  }, []);
 
   useEffect(() => {
     fetchCheckContract(idContractor, number, dateContract);
@@ -111,7 +110,10 @@ export default function ModalAddContract({
   }, [idContractor, number, dateContract]);
 
   async function handleUpload(values) {
-    console.log("values", values)
+    // if (dateEndContract) {
+    //   values.dateEndContract = dateEndContract;
+    // }
+    console.log("values", values);
     const formData = new FormData();
     fileList.forEach((file) => {
       formData.append("files", file);
@@ -191,6 +193,19 @@ export default function ModalAddContract({
             }}
           />
         </Form.Item>
+        {/* <Form.Item name="dateEndContract" label="Дата окончания договора">
+          <DatePicker
+            format="DD.MM.YYYY"
+            allowClear
+            onChange={(date) => {
+              setDateEndContract(date ? date.format("YYYY-MM-DD") : null);
+            }}
+          />
+        </Form.Item> */}
+
+        <Form.Item name="dateEndContract" label="Окончание договора">
+          <DatePicker format="DD.MM.YYYY" allowClear />
+        </Form.Item>
         <Form.Item name="description" label="Предмет договора">
           <Input.TextArea />
         </Form.Item>
@@ -200,18 +215,31 @@ export default function ModalAddContract({
         {/* <Form.Item name="comment" label="Комментарий">
           <Input.TextArea />
           </Form.Item> */}
-        <Form.Item name="purpose" label="Назначение" required={true} initialValue={61}>
+        <Form.Item
+          name="purpose"
+          label="Назначение"
+          required={true}
+          initialValue={61}
+        >
           <Select options={purpose} />
         </Form.Item>
         <Form.Item name="filial" label="Филиал" required={true}>
           <Select options={filials} />
         </Form.Item>
-        <Flex vertical >
-
+        <Flex vertical>
           <Form.Item name="overhaul" label={"Рамочный договор"}>
             <Switch />
           </Form.Item>
-          <Typography.Text style={{ color: "gray",marginTop:-27,marginBottom:30,marginLeft:20 }}>Фотоотчеты выполнения этапов договора в разрезе объектов</Typography.Text>
+          <Typography.Text
+            style={{
+              color: "gray",
+              marginTop: -27,
+              marginBottom: 30,
+              marginLeft: 20,
+            }}
+          >
+            Фотоотчеты выполнения этапов договора в разрезе объектов
+          </Typography.Text>
         </Flex>
 
         <Upload {...props} accept=".jpg,.jpeg,.png,.pdf">

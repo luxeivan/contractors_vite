@@ -18,7 +18,8 @@ import {
   Tag,
   Select,
   Card,
-  ConfigProvider
+  ConfigProvider,
+  DatePicker,
 } from "antd";
 import {
   getAllPurposes,
@@ -302,9 +303,49 @@ export default function ModalViewContract({
       {
         key: "3",
         label: "Дата окончания договора",
-        children: contract.dateEndContract
-          ? <span>{dayjs(contract.dateEndContract).format("DD.MM.YYYY")}</span>
-          : <Text type="secondary">не указана</Text>,
+        children:
+          user?.role?.type === "readadmin" ? (
+            contract.dateEndContract
+              ? dayjs(contract.dateEndContract).format("DD.MM.YYYY")
+              : "не указана"
+          ) : (
+            <DatePicker
+              format="DD.MM.YYYY"
+              allowClear
+              placeholder="Выбрать дату"
+              value={
+                contract.dateEndContract
+                  ? dayjs(contract.dateEndContract)
+                  : null
+              }
+              onChange={async (d) => {
+                try {
+                  await fetchJSON(
+                    `${server}/api/contracts/${contract.documentId}`,
+                    {
+                      method: "PUT",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+                      },
+                      body: JSON.stringify({
+                        data: {
+                          dateEndContract: d
+                            ? d.format("YYYY-MM-DD")
+                            : null,
+                        },
+                      }),
+                    }
+                  );
+                  const updated = await getContractItem(contract.documentId);
+                  setContract(updated);
+                  update();
+                } catch {
+                  message.error("Не удалось сохранить дату окончания");
+                }
+              }}
+            />
+          ),
       },
       {
         key: "4",
