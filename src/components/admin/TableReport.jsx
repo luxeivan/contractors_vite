@@ -334,7 +334,7 @@ export default function TableReport() {
               checked={onlyAtWork}
               onChange={(e) => setOnlyAtWork(e.target.checked)}
             >
-              В работе
+              Договоры в работе
             </Checkbox>
 
             <Flex align="center" gap={10}>
