@@ -11,10 +11,7 @@ import {
   Select,
   Divider,
 } from "antd";
-import {
-  SwapOutlined,
-  FilterOutlined,
-} from "@ant-design/icons";
+import { SwapOutlined, FilterOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import ModalViewContract from "./ModalViewContract";
 import { getAllFilials } from "../../lib/getData";
@@ -27,7 +24,7 @@ export default function TableReport() {
   const [filials, setFilials] = useState([]);
   const [selectedFilial, setSelectedFilial] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [onlyAtWork, setOnlyAtWork] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("work");
 
   const fetchFilials = async () => {
     try {
@@ -89,7 +86,8 @@ export default function TableReport() {
         (contract) => {
           if (contract.purpose?.id === 49) return false;
 
-          if (onlyAtWork && contract.completed) return false;
+          if (statusFilter === "work" && contract.completed) return false;
+          if (statusFilter === "archive" && !contract.completed) return false;
 
           return matchFilial(contract, selectedFilial);
         }
@@ -139,7 +137,7 @@ export default function TableReport() {
     });
 
     return result;
-  }, [contractors, selectedFilial, onlyAtWork]);
+  }, [contractors, selectedFilial, statusFilter]);
 
   const sortedData = useMemo(() => {
     const data = [...processedData];
@@ -310,6 +308,45 @@ export default function TableReport() {
           <Typography.Text>
             Всего этапов: {totalStats.totalSteps}
           </Typography.Text>
+          
+             {/* Фильтры */}
+          <Flex vertical gap={6}>
+            <Flex align="center" gap={8}>
+              <FilterOutlined style={{ color: "#52c41a" }} />
+              <Typography.Text strong>Фильтры</Typography.Text>
+            </Flex>
+
+            <Flex wrap align="center" gap={24}>
+              <Flex align="center" gap={10}>
+                <Typography.Text>Статус:</Typography.Text>
+                <Select
+                  style={{ minWidth: 200 }}
+                  value={statusFilter}
+                  onChange={(val) => setStatusFilter(val)}
+                  options={[
+                    { value: "all", label: "Все" },
+                    { value: "work", label: "В работе" },
+                    { value: "archive", label: "Архивный" },
+                  ]}
+                />
+              </Flex>
+
+              <Flex align="center" gap={10}>
+                <Typography.Text>Филиал:</Typography.Text>
+                <Select
+                  style={{ minWidth: 240 }}
+                  value={selectedFilial}
+                  placeholder="Все"
+                  onChange={(val) => setSelectedFilial(val)}
+                  options={filials}
+                />
+              </Flex>
+            </Flex>
+          </Flex>
+          <Divider style={{ margin: "8px 0" }} />
+       
+
+          {/* Сортировки */}
           <Flex vertical gap={6}>
             <Flex align="center" gap={8}>
               <SwapOutlined style={{ color: "#1677ff" }} />
@@ -323,31 +360,6 @@ export default function TableReport() {
             </Checkbox>
           </Flex>
 
-          <Divider style={{ margin: "8px 0" }} />
-
-          <Flex vertical gap={6}>
-            <Flex align="center" gap={8}>
-              <FilterOutlined style={{ color: "#52c41a" }} />
-              <Typography.Text strong>Фильтры</Typography.Text>
-            </Flex>
-            <Checkbox
-              checked={onlyAtWork}
-              onChange={(e) => setOnlyAtWork(e.target.checked)}
-            >
-              Договоры в работе
-            </Checkbox>
-
-            <Flex align="center" gap={10}>
-              <Typography.Text>Филиал:</Typography.Text>
-              <Select
-                style={{ minWidth: 240 }}
-                value={selectedFilial}
-                placeholder="Все"
-                onChange={(val) => setSelectedFilial(val)}
-                options={filials}
-              />
-            </Flex>
-          </Flex>
         </Flex>
       )}
 
@@ -380,7 +392,6 @@ export default function TableReport() {
   );
 }
 
-
 // import React, { useEffect, useState, useMemo } from "react";
 // import useContractors from "../../store/useContractors";
 // import {
@@ -392,7 +403,12 @@ export default function TableReport() {
 //   Tag,
 //   Typography,
 //   Select,
+//   Divider,
 // } from "antd";
+// import {
+//   SwapOutlined,
+//   FilterOutlined,
+// } from "@ant-design/icons";
 // import dayjs from "dayjs";
 // import ModalViewContract from "./ModalViewContract";
 // import { getAllFilials } from "../../lib/getData";
@@ -405,6 +421,7 @@ export default function TableReport() {
 //   const [filials, setFilials] = useState([]);
 //   const [selectedFilial, setSelectedFilial] = useState(null);
 //   const [loading, setLoading] = useState(true);
+//   const [onlyAtWork, setOnlyAtWork] = useState(true);
 
 //   const fetchFilials = async () => {
 //     try {
@@ -466,6 +483,8 @@ export default function TableReport() {
 //         (contract) => {
 //           if (contract.purpose?.id === 49) return false;
 
+//           if (onlyAtWork && contract.completed) return false;
+
 //           return matchFilial(contract, selectedFilial);
 //         }
 //       );
@@ -514,7 +533,7 @@ export default function TableReport() {
 //     });
 
 //     return result;
-//   }, [contractors, selectedFilial]);
+//   }, [contractors, selectedFilial, onlyAtWork]);
 
 //   const sortedData = useMemo(() => {
 //     const data = [...processedData];
@@ -685,23 +704,43 @@ export default function TableReport() {
 //           <Typography.Text>
 //             Всего этапов: {totalStats.totalSteps}
 //           </Typography.Text>
-//           <Flex>
+//           <Flex vertical gap={6}>
+//             <Flex align="center" gap={8}>
+//               <SwapOutlined style={{ color: "#1677ff" }} />
+//               <Typography.Text strong>Сортировка</Typography.Text>
+//             </Flex>
 //             <Checkbox
 //               checked={sortLastStep}
 //               onChange={(e) => setSortLastStep(e.target.checked)}
 //             >
-//               Сортировать по дате последнего добавления этапа
+//               По дате последнего добавления этапа
 //             </Checkbox>
 //           </Flex>
-//           <Flex align="center" gap={10}>
-//             <Typography.Text>Филиал:</Typography.Text>
-//             <Select
-//               style={{ minWidth: 240 }}
-//               value={selectedFilial}
-//               placeholder="Все"
-//               onChange={(val) => setSelectedFilial(val)}
-//               options={filials}
-//             />
+
+//           <Divider style={{ margin: "8px 0" }} />
+
+//           <Flex vertical gap={6}>
+//             <Flex align="center" gap={8}>
+//               <FilterOutlined style={{ color: "#52c41a" }} />
+//               <Typography.Text strong>Фильтры</Typography.Text>
+//             </Flex>
+//             <Checkbox
+//               checked={onlyAtWork}
+//               onChange={(e) => setOnlyAtWork(e.target.checked)}
+//             >
+//               Договоры в работе
+//             </Checkbox>
+
+//             <Flex align="center" gap={10}>
+//               <Typography.Text>Филиал:</Typography.Text>
+//               <Select
+//                 style={{ minWidth: 240 }}
+//                 value={selectedFilial}
+//                 placeholder="Все"
+//                 onChange={(val) => setSelectedFilial(val)}
+//                 options={filials}
+//               />
+//             </Flex>
 //           </Flex>
 //         </Flex>
 //       )}
