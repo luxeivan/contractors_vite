@@ -26,6 +26,9 @@ export default function TableReport() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("work");
 
+  const [expireDays, setExpireDays] = useState(null);
+  const [sortByEndDate, setSortByEndDate] = useState(false);
+
   const fetchFilials = async () => {
     try {
       const res = await getAllFilials(100, 1);
@@ -86,8 +89,18 @@ export default function TableReport() {
         (contract) => {
           if (contract.purpose?.id === 49) return false;
 
+          // if (statusFilter === "work" && contract.completed) return false;
+          // if (statusFilter === "archive" && !contract.completed) return false;
+
           if (statusFilter === "work" && contract.completed) return false;
           if (statusFilter === "archive" && !contract.completed) return false;
+
+          if (expireDays !== null) {
+            if (!contract.dateEndContract) return false;
+
+            const diff = dayjs(contract.dateEndContract).diff(dayjs(), "day");
+            if (diff < 0 || diff > expireDays) return false;
+          }
 
           return matchFilial(contract, selectedFilial);
         }
@@ -137,10 +150,45 @@ export default function TableReport() {
     });
 
     return result;
-  }, [contractors, selectedFilial, statusFilter]);
+  }, [contractors, selectedFilial, statusFilter, expireDays]);
 
+  // const sortedData = useMemo(() => {
+  //   const data = [...processedData];
+
+  //   if (sortLastStep) {
+  //     return data.sort((a, b) => {
+  //       if (!a.lastStepDate && !b.lastStepDate) return 0;
+  //       if (!a.lastStepDate) return 1;
+  //       if (!b.lastStepDate) return -1;
+  //       return b.lastStepDate.unix() - a.lastStepDate.unix();
+  //     });
+  //   }
+
+  //   return data.sort((a, b) =>
+  //     a.contractor.name.localeCompare(b.contractor.name)
+  //   );
+  // }, [processedData, sortLastStep]);
   const sortedData = useMemo(() => {
     const data = [...processedData];
+
+    if (sortByEndDate) {
+      return data.sort((a, b) => {
+        const aDates = a.contracts
+          .map((c) => c.dateEndContract)
+          .filter(Boolean)
+          .map((d) => new Date(d).getTime());
+
+        const bDates = b.contracts
+          .map((c) => c.dateEndContract)
+          .filter(Boolean)
+          .map((d) => new Date(d).getTime());
+
+        const aMin = aDates.length ? Math.min(...aDates) : Infinity;
+        const bMin = bDates.length ? Math.min(...bDates) : Infinity;
+
+        return aMin - bMin;
+      });
+    }
 
     if (sortLastStep) {
       return data.sort((a, b) => {
@@ -154,7 +202,7 @@ export default function TableReport() {
     return data.sort((a, b) =>
       a.contractor.name.localeCompare(b.contractor.name)
     );
-  }, [processedData, sortLastStep]);
+  }, [processedData, sortLastStep, sortByEndDate]);
 
   const collapseItems = sortedData.map((item) => {
     const lastStepText = item.lastStepDate
@@ -232,7 +280,17 @@ export default function TableReport() {
               }
 
               return (
-                <List.Item>
+                <List.Item
+                  style={
+                    contract.dateEndContract &&
+                    dayjs(contract.dateEndContract).isBefore(dayjs(), "day")
+                      ? {
+                          background: "#fff1f0",
+                          borderLeft: "4px solid #ff4d4f",
+                        }
+                      : {}
+                  }
+                >
                   <Flex
                     gap={20}
                     wrap
@@ -274,6 +332,11 @@ export default function TableReport() {
                         {contractLastStep.format("DD.MM.YYYY HH:mm")}
                       </Typography.Text>
                     )}
+                    {contract.dateEndContract && (
+                      <Typography.Text style={{ flex: "0 0 auto" }}>
+                        Дата окончания: {dayjs(contract.dateEndContract).format("DD.MM.YYYY")}
+                      </Typography.Text>
+                    )}
                   </Flex>
                 </List.Item>
               );
@@ -308,8 +371,8 @@ export default function TableReport() {
           <Typography.Text>
             Всего этапов: {totalStats.totalSteps}
           </Typography.Text>
-          
-             {/* Фильтры */}
+
+          {/* Фильтры */}
           <Flex vertical gap={6}>
             <Flex align="center" gap={8}>
               <FilterOutlined style={{ color: "#52c41a" }} />
@@ -341,10 +404,25 @@ export default function TableReport() {
                   options={filials}
                 />
               </Flex>
+
+              <Flex align="center" gap={10}>
+                <Typography.Text>Истекает в течение:</Typography.Text>
+                <Select
+                  style={{ width: 160 }}
+                  allowClear
+                  placeholder="N дней"
+                  value={expireDays}
+                  onChange={(val) => setExpireDays(val)}
+                  options={[
+                    { value: 7, label: "7 дней" },
+                    { value: 14, label: "14 дней" },
+                    { value: 30, label: "30 дней" },
+                  ]}
+                />
+              </Flex>
             </Flex>
           </Flex>
           <Divider style={{ margin: "8px 0" }} />
-       
 
           {/* Сортировки */}
           <Flex vertical gap={6}>
@@ -354,12 +432,26 @@ export default function TableReport() {
             </Flex>
             <Checkbox
               checked={sortLastStep}
-              onChange={(e) => setSortLastStep(e.target.checked)}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setSortLastStep(checked);
+                if (checked) setSortByEndDate(false);
+              }}
             >
               По дате последнего добавления этапа
             </Checkbox>
-          </Flex>
 
+            <Checkbox
+              checked={sortByEndDate}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setSortByEndDate(checked);
+                if (checked) setSortLastStep(false);
+              }}
+            >
+              По дате окончания договора
+            </Checkbox>
+          </Flex>
         </Flex>
       )}
 
