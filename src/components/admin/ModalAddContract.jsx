@@ -242,7 +242,7 @@ export default function ModalAddContract({
           </Typography.Text>
         </Flex>
 
-        <Upload {...props} accept=".jpg,.jpeg,.png,.pdf">
+        <Upload {...props} accept=".jpg,.jpeg,.png,.pdf,.webp">
           <Button icon={<UploadOutlined />}>Выбрать документ</Button>
         </Upload>
         <Form.Item label={null}>
