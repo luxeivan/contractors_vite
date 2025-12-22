@@ -405,7 +405,7 @@ export default function TableReport() {
                 />
               </Flex>
 
-              <Flex align="center" gap={10}>
+              {/* <Flex align="center" gap={10}>
                 <Typography.Text>Истекает в течение:</Typography.Text>
                 <Select
                   style={{ width: 160 }}
@@ -419,7 +419,7 @@ export default function TableReport() {
                     { value: 30, label: "30 дней" },
                   ]}
                 />
-              </Flex>
+              </Flex> */}
             </Flex>
           </Flex>
           <Divider style={{ margin: "8px 0" }} />
