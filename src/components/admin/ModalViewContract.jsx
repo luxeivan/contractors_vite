@@ -309,42 +309,73 @@ export default function ModalViewContract({
               ? dayjs(contract.dateEndContract).format("DD.MM.YYYY")
               : "не указана"
           ) : (
-            <DatePicker
-              format="DD.MM.YYYY"
-              allowClear
-              placeholder="Выбрать дату"
-              value={
-                contract.dateEndContract
-                  ? dayjs(contract.dateEndContract)
-                  : null
-              }
-              onChange={async (d) => {
-                try {
-                  await fetchJSON(
-                    `${server}/api/contracts/${contract.documentId}`,
-                    {
-                      method: "PUT",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("jwt")}`,
-                      },
-                      body: JSON.stringify({
-                        data: {
-                          dateEndContract: d
-                            ? d.format("YYYY-MM-DD")
-                            : null,
-                        },
-                      }),
+            (() => {
+              // Сохраняем предыдущее значение даты окончания
+              const prevDateEnd = contract.dateEndContract;
+              return (
+                <DatePicker
+                  format="DD.MM.YYYY"
+                  allowClear
+                  placeholder="Выбрать дату"
+                  value={
+                    contract.dateEndContract
+                      ? dayjs(contract.dateEndContract)
+                      : null
+                  }
+                  onChange={async (d) => {
+                    // Сравнить даты: если одинаковы, ничего не делать
+                    const prev = prevDateEnd ? dayjs(prevDateEnd) : null;
+                    const next = d ? dayjs(d) : null;
+                    let changed = false;
+                    if (!prev && next) changed = true;
+                    else if (prev && !next) changed = true;
+                    else if (prev && next && !prev.isSame(next, "day")) changed = true;
+                    if (!changed) return;
+                    try {
+                      await fetchJSON(
+                        `${server}/api/contracts/${contract.documentId}`,
+                        {
+                          method: "PUT",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+                          },
+                          body: JSON.stringify({
+                            data: {
+                              dateEndContract: d
+                                ? d.format("YYYY-MM-DD")
+                                : null,
+                            },
+                          }),
+                        }
+                      );
+                      // Логирование изменения даты окончания
+                      if (!prev && next) {
+                        await logContractAction({
+                          contractId: contract.id,
+                          text: `📅 Дата окончания договора установлена: ${dayjs(d).format("DD.MM.YYYY")}`,
+                        });
+                      } else if (prev && !next) {
+                        await logContractAction({
+                          contractId: contract.id,
+                          text: `❌ Дата окончания договора удалена (была ${dayjs(prevDateEnd).format("DD.MM.YYYY")})`,
+                        });
+                      } else if (prev && next && !prev.isSame(next, "day")) {
+                        await logContractAction({
+                          contractId: contract.id,
+                          text: `🔄 Дата окончания договора изменена: ${dayjs(prevDateEnd).format("DD.MM.YYYY")} → ${dayjs(d).format("DD.MM.YYYY")}`,
+                        });
+                      }
+                      const updated = await getContractItem(contract.documentId);
+                      setContract(updated);
+                      update();
+                    } catch {
+                      message.error("Не удалось сохранить дату окончания");
                     }
-                  );
-                  const updated = await getContractItem(contract.documentId);
-                  setContract(updated);
-                  update();
-                } catch {
-                  message.error("Не удалось сохранить дату окончания");
-                }
-              }}
-            />
+                  }}
+                />
+              );
+            })()
           ),
       },
       {
