@@ -106,16 +106,16 @@ export default function ButtonAddStep({
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
 
-
   const [items, setItems] = useState([]);
 
   const MAX_TOTAL_SIZE = 20 * 1024 * 1024; // 20 МБ
-  const ALLOWED_RE = /\.(jpe?g|png)$/i;
-
+  // const ALLOWED_RE = /\.(jpe?g|png)$/i;
+  const ALLOWED_RE = /\.(jpe?g|png|webp)$/i;
 
   const uploadProps = {
     multiple: true,
-    accept: ".jpg,.jpeg,.png",
+    // accept: ".jpg,.jpeg,.png",
+    accept: ".jpg,.jpeg,.png,.webp",
     showUploadList: false,
     beforeUpload: (rawFile) => {
       // 1) Проверка формата
@@ -206,12 +206,12 @@ export default function ButtonAddStep({
 
       // 3) Если это объект строительства, то привязываем шаг к объекту строительства
       if (documentIdObject) {
-        arrSteps.push(newStep.data.data.id)
+        arrSteps.push(newStep.data.data.id);
         await axios.put(
           `${server}/api/object-constructions/${documentIdObject}`,
           {
             data: {
-              steps: arrSteps
+              steps: arrSteps,
             },
           },
           {
@@ -329,9 +329,13 @@ export default function ButtonAddStep({
             <br />
             <Text style={{ color: "#999", fontSize: 12 }}>
               Допускаются файлы только формата:{" "}
+              {/* <Text style={{ color: "#8f0000", fontWeight: 600 }}>jpg,</Text>{" "}
+              <Text style={{ color: "#8f0000", fontWeight: 600 }}>jpeg,</Text>{" "}
+              <Text style={{ color: "#8f0000", fontWeight: 600 }}>png</Text> */}
               <Text style={{ color: "#8f0000", fontWeight: 600 }}>jpg,</Text>{" "}
               <Text style={{ color: "#8f0000", fontWeight: 600 }}>jpeg,</Text>{" "}
-              <Text style={{ color: "#8f0000", fontWeight: 600 }}>png</Text>
+              <Text style={{ color: "#8f0000", fontWeight: 600 }}>png,</Text>{" "}
+              <Text style={{ color: "#8f0000", fontWeight: 600 }}>webp</Text>
             </Text>
           </div>
 
