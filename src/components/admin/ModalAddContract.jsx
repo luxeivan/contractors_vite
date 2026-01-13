@@ -5,7 +5,7 @@ import {
   getAllFilials,
   getAllPurposes,
 } from "../../lib/getData";
-import { UploadOutlined } from "@ant-design/icons";
+import { InfoCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import {
   Button,
   ConfigProvider,
@@ -18,6 +18,7 @@ import {
   Typography,
   Checkbox,
   Flex,
+  Popover,
 } from "antd";
 import React, { useEffect, useState, useMemo } from "react";
 import locale from "antd/es/locale/ru_RU";
@@ -203,7 +204,9 @@ export default function ModalAddContract({
           />
         </Form.Item> */}
 
-        <Form.Item name="dateEndContract" label="Окончание договора">
+        <Form.Item name="dateEndContract" label={<div style={{whiteSpace:"balance",lineHeight:1}}>Дата выполнения работ <Popover content={"со стороны подрядной организации согласно условиям договора подряда"}>
+          <InfoCircleOutlined style={{ color: "#e37021", cursor: "pointer" }} />
+        </Popover></div>}>
           <DatePicker format="DD.MM.YYYY" allowClear />
         </Form.Item>
         <Form.Item name="description" label="Предмет договора">

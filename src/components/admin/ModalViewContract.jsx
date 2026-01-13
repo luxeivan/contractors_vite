@@ -20,6 +20,7 @@ import {
   Card,
   ConfigProvider,
   DatePicker,
+  Popover,
 } from "antd";
 import {
   getAllPurposes,
@@ -36,6 +37,7 @@ import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 import { server } from "../../config";
 import useAuth from "../../store/authStore";
+import { InfoCircleOutlined } from "@ant-design/icons";
 
 const { Panel } = Collapse;
 const { Text, Title } = Typography;
@@ -302,7 +304,9 @@ export default function ModalViewContract({
       },
       {
         key: "3",
-        label: "Дата окончания договора",
+        label: <>Дата выполнения работ <Popover content={"со стороны подрядной организации согласно условиям договора подряда"}>
+          <InfoCircleOutlined style={{color:"#e37021",cursor:"pointer"}}/>
+        </Popover></>,
         children:
           user?.role?.type === "readadmin" ? (
             contract.dateEndContract
