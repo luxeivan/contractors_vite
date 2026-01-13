@@ -5,7 +5,9 @@ import React, { useState } from 'react'
 import dayjs from 'dayjs'
 import { server } from "../../config";
 import RenameStep from './RenameStep';
+import useAuth from '../../store/authStore';
 export default function ViewSteps({ steps, update }) {
+    const { user } = useAuth((store) => store);
     const [isOpenModalRename, setIsOpenModalRename] = useState(false)
     const items = steps.map((item, index) => (
         {
@@ -14,10 +16,13 @@ export default function ViewSteps({ steps, update }) {
             children: <Flex vertical gap={20}>
                 <Flex justify='space-between' wrap={'wrap'}>
                     <p>{item.description}</p>
-                    <Button onClick={() => {
-                        console.log(item.documentId)
-                        setIsOpenModalRename({ documentId: item.documentId, currentName: item.name, currentDescription: item.description })
-                    }}>Переименовать этап</Button>
+                    {user?.role?.type === "admin" &&
+
+                        <Button onClick={() => {
+                            console.log(item.documentId)
+                            setIsOpenModalRename({ documentId: item.documentId, currentName: item.name, currentDescription: item.description })
+                        }}>Переименовать этап</Button>
+                    }
                 </Flex>
                 <Image.PreviewGroup>
                     <Flex gap={20} wrap={"wrap"}>
