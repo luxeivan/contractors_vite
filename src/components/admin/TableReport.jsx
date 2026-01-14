@@ -334,7 +334,7 @@ export default function TableReport() {
                     )}
                     {contract.dateEndContract && (
                       <Typography.Text style={{ flex: "0 0 auto" }}>
-                        Дата окончания: {dayjs(contract.dateEndContract).format("DD.MM.YYYY")}
+                        Дата выполнения работ: {dayjs(contract.dateEndContract).format("DD.MM.YYYY")}
                       </Typography.Text>
                     )}
                   </Flex>
@@ -449,7 +449,7 @@ export default function TableReport() {
                 if (checked) setSortLastStep(false);
               }}
             >
-              По дате окончания договора
+              По дате выполнения работ
             </Checkbox>
           </Flex>
         </Flex>
