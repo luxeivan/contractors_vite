@@ -204,9 +204,13 @@ export default function ModalAddContract({
           />
         </Form.Item> */}
 
-        <Form.Item name="dateEndContract" label={<div style={{whiteSpace:"balance",lineHeight:1}}>Дата выполнения работ <Popover content={"со стороны подрядной организации согласно условиям договора подряда"}>
+        <Form.Item name="dateEndContract" label={
+          <div style={{whiteSpace:"break-spaces",lineHeight:1}}>
+            Дата завершения работ по договору
+          {/* <Popover content={"со стороны подрядной организации согласно условиям договора подряда"}>
           <InfoCircleOutlined style={{ color: "#e37021", cursor: "pointer" }} />
-        </Popover></div>}>
+        </Popover> */}
+        </div>}>
           <DatePicker format="DD.MM.YYYY" allowClear />
         </Form.Item>
         <Form.Item name="description" label="Предмет договора">

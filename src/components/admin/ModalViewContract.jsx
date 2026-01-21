@@ -304,9 +304,11 @@ export default function ModalViewContract({
       },
       {
         key: "3",
-        label: <>Дата выполнения работ <Popover content={"со стороны подрядной организации согласно условиям договора подряда"}>
+        label: <>Дата завершения работ по договору 
+        {/* <Popover content={"со стороны подрядной организации согласно условиям договора подряда"}>
           <InfoCircleOutlined style={{color:"#e37021",cursor:"pointer"}}/>
-        </Popover></>,
+        </Popover> */}
+        </>,
         children:
           user?.role?.type === "readadmin" ? (
             contract.dateEndContract
