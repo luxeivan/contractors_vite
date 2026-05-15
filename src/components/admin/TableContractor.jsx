@@ -1,4 +1,4 @@
-import { getAllContractors } from "../../lib/getData";
+import { getAllContractors, getForFilterContractors } from "../../lib/getData";
 import {
   Table,
   Flex,
@@ -26,13 +26,13 @@ export default function TableContractor() {
   /* ─────────────── state ─────────────── */
   const [loading, setLoading] = useState(true);
 
-  /** `all`   – полный список (однократно с сервера) */
-  const [all, setAll] = useState([]);
+
   /** `rows`  – список после фильтра (именно он идёт в таблицу) */
   const [rows, setRows] = useState([]);
+  const [meta, setMeta] = useState({});
 
   /** для Select */
-  const [options, setOptions] = useState([{ value: "", label: "Все" }]);
+  const [options, setOptions] = useState([]);
   const [selId, setSelId] = useState(null);
 
   /** пагинация */
@@ -46,37 +46,38 @@ export default function TableContractor() {
   const [commentsRec, setCRec] = useState(null);
 
   const msg = message;
-
+  async function fetchForFilterContractors() {
+    try {
+      const forFilterContractors = await getForFilterContractors()
+      setOptions([
+        ...forFilterContractors.map((c) => ({ value: c.documentId, label: c.name })),
+      ]);
+    } catch (error) {
+      console.error(error);
+      msg.error("Не удалось получить подрядчиков для фильтра");
+    }
+  }
+  async function fetchAllContractors() {
+    try {
+      setLoading(true);
+      const res = await getAllContractors(page, pageSize, [{ name: "documentId", value: selId }]);
+      // console.log("res", res)
+      setMeta(res.meta)
+      setRows(res.data);
+    } catch (e) {
+      console.error(e);
+      msg.error("Не удалось получить подрядчиков");
+    } finally {
+      setLoading(false);
+    }
+  }
   /* ─────────────── 1-разовая загрузка всех подрядчиков ─────────────── */
   useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await getAllContractors(1000, 1, {});
-        setAll(res.data);
-        setRows(res.data);
-        setOptions([
-          { value: "", label: "Все" },
-          ...res.data.map((c) => ({ value: c.id, label: c.name })),
-        ]);
-      } catch (e) {
-        console.error(e);
-        msg.error("Не удалось получить подрядчиков");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetchForFilterContractors()
   }, []);
-
-  /* ─────────────── фильтрация при выборе подрядчика ─────────────── */
   useEffect(() => {
-    if (!selId) {
-      setRows(all);
-    } else {
-      setRows(all.filter((c) => c.id === selId));
-    }
-    setPage(1);
-  }, [selId, all]);
+    fetchAllContractors()
+  }, [page, pageSize, selId]);
 
   /* ─────────────── колонки таблицы ─────────────── */
   const columns = [
@@ -151,27 +152,26 @@ export default function TableContractor() {
           placeholder="Подрядчик"
           value={selId || undefined}
           optionFilterProp="label"
-          options={options.sort((a, b) => a.label.localeCompare(b.label))}
+          options={options}
           filterOption={(input, opt) =>
             opt.label.toLowerCase().includes(input.toLowerCase())
           }
-          onChange={(val) => setSelId(val || null)}
+          onChange={(val) => {
+            setSelId(val)
+            setPage(1)
+          }}
         />
 
         <Flex gap={20} align="center">
           {/* Сброс / обновить */}
           <Tooltip title="Сбросить фильтр / обновить">
-            <a
-              onClick={() => {
-                setSelId(null);
-                setOptions([
-                  { value: "", label: "Все" },
-                  ...all.map((c) => ({ value: c.id, label: c.name })),
-                ]);
-              }}
-            >
-              <ReloadOutlined />
-            </a>
+
+            <ReloadOutlined onClick={() => {
+              setSelId(null)
+              setPage(1)
+              setPageSize(DEFAULT_PAGE_SIZE)
+            }} />
+
           </Tooltip>
 
           {user.role.type !== "readadmin" && (
@@ -186,18 +186,18 @@ export default function TableContractor() {
       <Table
         rowClassName={() => "hoverable-row"}
         columns={columns}
-        dataSource={data.slice((page - 1) * pageSize, page * pageSize)}
+        dataSource={data}
         loading={loading}
         pagination={{
           current: page,
           pageSize: pageSize,
-          total: rows.length,
+          total: meta?.pagination?.total,
           showSizeChanger: true,
           pageSizeOptions: ["10", "25", "50", "100"],
           showTotal: (tot, range) => `${range[0]}-${range[1]} из ${tot} всего`,
-          onChange: (p, ps) => {
-            setPage(p);
-            setPageSize(ps);
+          onChange: (page, pageSize) => {
+            setPage(page);
+            setPageSize(pageSize);
           },
         }}
         rowKey="key"
@@ -235,12 +235,8 @@ export default function TableContractor() {
             // перезагружаем весь справочник
             (async () => {
               const res = await getAllContractors(1000, 1, {});
-              setAll(res.data);
+
               setRows(res.data);
-              setOptions([
-                { value: "", label: "Все" },
-                ...res.data.map((c) => ({ value: c.id, label: c.name })),
-              ]);
               setLoading(false);
             })();
           }}

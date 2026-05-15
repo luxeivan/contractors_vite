@@ -3,6 +3,7 @@ import {
   getAllContracts,
   getAllPurposes,
   getAllFilials,
+  getForFilterContractors
 } from "../../lib/getData";
 import {
   Table,
@@ -97,14 +98,12 @@ export default function TableContract() {
 
   const fetchContractors = async () => {
     try {
-      const res = await getAllContractors(1000, 1);
-      const temp = res.data
-        .sort((a, b) => a.name.localeCompare(b.name))
+      const forFilterContractors = await getForFilterContractors();
+      const temp = forFilterContractors      
         .map((item) => ({
           value: item.id,
           label: item.name,
         }));
-      temp.unshift({ value: null, label: "Все" });
       setListContractors(temp);
     } catch (error) {
       console.error("fetchContractors error:", error);

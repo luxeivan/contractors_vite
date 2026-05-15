@@ -40,7 +40,7 @@ export async function getContractItem(idContract) {
   try {
     const res = await axios.get(
       server +
-        `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose&populate[4]=object_constructions.steps.photos&populate[5]=filial`,
+      `/api/contracts/${idContract}?populate[0]=contractor&populate[1]=document&populate[2]=steps.photos&populate[3]=purpose&populate[4]=object_constructions.steps.photos&populate[5]=filial`,
       {
         headers: {
           Authorization: `Bearer ${await getJwt()}`,
@@ -109,31 +109,31 @@ export async function getAllContracts(pageSize = 5, page = 1, filters = {}) {
       filters: {
         contractor: filters.contractorId
           ? {
-              id: {
-                $eq: filters.contractorId,
-              },
-            }
+            id: {
+              $eq: filters.contractorId,
+            },
+          }
           : undefined,
         // social: filters.social ? filters.social : undefined,
         completed:
           filters.completed === 0
             ? undefined
             : filters.completed === 2
-            ? true
-            : false,
+              ? true
+              : false,
         purpose: filters.purposeId
           ? {
-              id: {
-                $eq: filters.purposeId,
-              },
-            }
+            id: {
+              $eq: filters.purposeId,
+            },
+          }
           : undefined,
         filial: filters.filialId
           ? {
-              id: {
-                $eq: filters.filialId,
-              },
-            }
+            id: {
+              $eq: filters.filialId,
+            },
+          }
           : undefined,
       },
       populate: {
@@ -209,12 +209,51 @@ export async function getAllFilials(pageSize = 100, page = 1, filters = {}) {
   }
 }
 
+// Запрос подрядчика для фильтра
+export async function getForFilterContractors() {
+  const contractors = []
+  async function fetchContractors(page = 1) {
+    try {
+      const res = await axios.get(
+        server +
+        `/api/contractors?pagination[pageSize]=100&pagination[page]=${page}&sort=name:asc`,
+        {
+          headers: {
+            Authorization: `Bearer ${await getJwt()}`,
+          },
+        }
+      );
+      if (res.data && res.data.data) {
+        // console.log("data", res.data.data);
+        contractors.push(...res.data.data)
+      }
+      if (res.data?.meta && page < res.data.meta.pagination.pageCount) {
+        await fetchContractors(page + 1)
+      }
+      // console.log(res.data)
+    } catch (error) {
+      console.log("error getForFilterContractors:", error);
+    }
+  }
+  await fetchContractors()
+  // console.log("contractors", contractors);
+  return contractors
+}
+
 // Запрос всех подрядчиков для админской учетки--------------------------------------------------------------------------
-export async function getAllContractors(pageSize = 5, page = 1, filters = {}) {
+export async function getAllContractors(page = 1, pageSize = 10, filters = []) {
   try {
+
+    let url = `${server}/api/contractors?pagination[pageSize]=${pageSize}&pagination[page]=${page}&sort=name:asc`
+    filters.forEach((item) => {
+      if(item.value){
+        url = url + `&filters[${item.name}][$eq]=${item.value}`
+      }
+    })
+    // console.log("url", url);
+
     const res = await axios.get(
-      server +
-        `/api/contractors?pagination[pageSize]=${pageSize}&pagination[page]=${page}&sort=createdAt:desc`,
+      url,
       {
         headers: {
           Authorization: `Bearer ${await getJwt()}`,
@@ -235,7 +274,7 @@ export async function getContractorItemForAdmin(idContractor) {
   try {
     const res = await axios.get(
       server +
-        `/api/contractors/${idContractor}?populate[0]=contracts&populate[1]=user`,
+      `/api/contractors/${idContractor}?populate[0]=contracts&populate[1]=user`,
       {
         headers: {
           Authorization: `Bearer ${await getJwt()}`,
@@ -422,7 +461,7 @@ export async function checkContractor(inn, value2) {
   try {
     const res = await axios.get(
       server +
-        `/api/contractors?filters[inn][$eq]=${inn}&filters[$or][0][kpp][$eq]=${value2}&filters[$or][1][ogrnip][$eq]=${value2}`,
+      `/api/contractors?filters[inn][$eq]=${inn}&filters[$or][0][kpp][$eq]=${value2}&filters[$or][1][ogrnip][$eq]=${value2}`,
       {
         headers: {
           Authorization: `Bearer ${await getJwt()}`,
@@ -446,7 +485,7 @@ export async function checkContract(idContract, number, date) {
   try {
     const res = await axios.get(
       server +
-        `/api/contracts?filters[number][$eq]=${number}&filters[dateContract][$eq]=${date}&filters[contractor][id][$eq]=${idContract}`,
+      `/api/contracts?filters[number][$eq]=${number}&filters[dateContract][$eq]=${date}&filters[contractor][id][$eq]=${idContract}`,
       {
         headers: {
           Authorization: `Bearer ${await getJwt()}`,
