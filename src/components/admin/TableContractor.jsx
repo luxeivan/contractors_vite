@@ -25,6 +25,7 @@ export default function TableContractor() {
 
   /* ─────────────── state ─────────────── */
   const [loading, setLoading] = useState(true);
+  const [reload, setReload] = useState(false);
 
 
   /** `rows`  – список после фильтра (именно он идёт в таблицу) */
@@ -74,10 +75,10 @@ export default function TableContractor() {
   /* ─────────────── 1-разовая загрузка всех подрядчиков ─────────────── */
   useEffect(() => {
     fetchForFilterContractors()
-  }, []);
+  }, [reload]);
   useEffect(() => {
     fetchAllContractors()
-  }, [page, pageSize, selId]);
+  }, [page, pageSize, selId, reload]);
 
   /* ─────────────── колонки таблицы ─────────────── */
   const columns = [
@@ -230,16 +231,7 @@ export default function TableContractor() {
       >
         <ModalAddContractor
           closeModalAddContract={() => setAddOpen(false)}
-          update={() => {
-            setLoading(true);
-            // перезагружаем весь справочник
-            (async () => {
-              const res = await getAllContractors(1000, 1, {});
-
-              setRows(res.data);
-              setLoading(false);
-            })();
-          }}
+          update={() => {setReload(!reload) }}
         />
       </Modal>
 
