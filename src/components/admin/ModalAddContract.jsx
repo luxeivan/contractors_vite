@@ -4,6 +4,7 @@ import {
   getAllContractors,
   getAllFilials,
   getAllPurposes,
+  getForFilterContractors,
 } from "../../lib/getData";
 import { InfoCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import {
@@ -45,9 +46,11 @@ export default function ModalAddContract({
 
   const [form] = Form.useForm();
   const fetchContractors = async () => {
-    const allContractors = await getAllContractors(100, 1);
+    const allContractors = await getForFilterContractors(100, 1);
+    // console.log("allContractors",allContractors);
+    
     setContractors(
-      allContractors.data.map((item) => ({
+      allContractors.map((item) => ({
         value: item.id,
         label: item.name,
       }))
@@ -63,7 +66,7 @@ export default function ModalAddContract({
     );
     // console.log(allPurposes);
     const def = allPurposes.data.find((item) => item.name === "Прочее")?.name;
-    console.log(def);
+    // console.log(def);
 
     setDefaultPurpose(def);
   };
@@ -76,10 +79,10 @@ export default function ModalAddContract({
       }))
     );
     // console.log(allPurposes);
-    const def = allPurposes.data.find((item) => item.name === "Прочее")?.name;
-    console.log(def);
+    // const def = allPurposes.data.find((item) => item.name === "Прочее")?.name;
+    // console.log(def);
 
-    setDefaultPurpose(def);
+    // setDefaultPurpose(def);
   };
 
   const fetchCheckContract = useMemo(
