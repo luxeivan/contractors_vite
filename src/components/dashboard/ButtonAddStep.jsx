@@ -225,7 +225,7 @@ export default function ButtonAddStep({
       updateContract();
     } catch (err) {
       console.error(err);
-      msg.error("Не удалось добавить этап");
+      msg.error(`Не удалось добавить этап, ошибка: ${err}`);
     } finally {
       setSending(false);
     }
